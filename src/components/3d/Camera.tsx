@@ -13,7 +13,7 @@ interface CameraProps {
  * Dual-perspective architectural camera manager for Villa Lumina.
  * Toggles seamlessly between Orbiting Dollhouse Axonometric View and First-Person Walkthrough.
  */
-export default function Camera({ currentMode = 'DOLLHOUSE' }: CameraProps) {
+export default function Camera({ currentMode = 'FIRST_PERSON' }: CameraProps) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
 
@@ -22,16 +22,16 @@ export default function Camera({ currentMode = 'DOLLHOUSE' }: CameraProps) {
     if (currentMode === 'DOLLHOUSE') {
       if (controlsRef.current) {
         controlsRef.current.enabled = true;
-        controlsRef.current.target.set(0, 1.2, 0);
+        controlsRef.current.target.set(-5.5, 1.2, 2.5);
       }
-      camera.position.set(0, 16, 20);
-      camera.lookAt(0, 1.2, 0);
+      camera.position.set(-5.5, 14, 16);
+      camera.lookAt(-5.5, 1.2, 2.5);
     } else {
       if (controlsRef.current) {
         controlsRef.current.enabled = false;
       }
-      camera.position.set(0, 1.65, 7.8);
-      camera.lookAt(0, 1.65, 0);
+      camera.position.set(0.0, 1.65, 11.2);
+      camera.lookAt(0.0, 1.65, 6.34);
     }
   }, [currentMode, camera]);
 

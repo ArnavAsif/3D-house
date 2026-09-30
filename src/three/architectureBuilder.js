@@ -6,7 +6,9 @@ import {
   createFlutedSlatsTexture,
   createStonePaverTexture,
   createGrassTexture,
-  createPlasterNormalTexture
+  createPlasterNormalTexture,
+  createDoorPlaqueTexture,
+  createCurtainTexture
 } from './textureGenerators';
 
 export function buildArchitecture(scene) {
@@ -209,6 +211,60 @@ export function buildArchitecture(scene) {
       roughness: 0.32,
       ior: 1.5,
       name: 'FlutedShowerGlass'
+    }),
+    curtain: new THREE.MeshStandardMaterial({
+      map: createCurtainTexture(),
+      roughness: 0.92,
+      metalness: 0.0,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.88,
+      name: 'SheerLinenCurtain'
+    }),
+    frostedGlass: new THREE.MeshPhysicalMaterial({
+      color: 0xeaf2f4,
+      transmission: 0.75,
+      opacity: 0.94,
+      transparent: true,
+      roughness: 0.45,
+      ior: 1.5,
+      name: 'FrostedArchitecturalGlass'
+    }),
+    plaqueBackingGlow: new THREE.MeshBasicMaterial({
+      color: 0xffedd0,
+      transparent: true,
+      opacity: 0.7,
+      name: 'PlaqueBackingGlow'
+    }),
+    bedroomPlaque: new THREE.MeshStandardMaterial({
+      map: createDoorPlaqueTexture('BEDROOM SUITE', 'COMING SOON'),
+      roughness: 0.35,
+      metalness: 0.65,
+      name: 'Plaque_Bedroom'
+    }),
+    diningPlaque: new THREE.MeshStandardMaterial({
+      map: createDoorPlaqueTexture('DINING ROOM', 'COMING SOON'),
+      roughness: 0.35,
+      metalness: 0.65,
+      name: 'Plaque_Dining'
+    }),
+    kitchenPlaque: new THREE.MeshStandardMaterial({
+      map: createDoorPlaqueTexture('GOURMET KITCHEN', 'COMING SOON'),
+      roughness: 0.35,
+      metalness: 0.65,
+      name: 'Plaque_Kitchen'
+    }),
+    foyerPlaque: new THREE.MeshStandardMaterial({
+      map: createDoorPlaqueTexture('ENTRANCE FOYER', 'COMING SOON'),
+      roughness: 0.35,
+      metalness: 0.65,
+      name: 'Plaque_Foyer'
+    }),
+    bathPlaque: new THREE.MeshStandardMaterial({
+      map: createDoorPlaqueTexture('SPA BATHROOM', 'COMING SOON'),
+      roughness: 0.35,
+      metalness: 0.65,
+      name: 'Plaque_Bathroom'
     })
   };
 
@@ -267,7 +323,7 @@ export function buildArchitecture(scene) {
   const kitchenSliderTrack = createBox(4.5, 0.006, 0.12, materials.sliderTrack, [3.75, 0.021, -7.85], 'KitchenSliderFloorTrack');
   floorsGroup.add(bedSliderTrack, kitchenSliderTrack);
 
-  // E. Front Entrance Raised Porch & Steps
+  // E. Front Entrance Raised Porch & Steps & Landscaped Exterior Approach
   // Lower step plinth (7.0m x 3.0m x 0.15m at Y = 0.075m)
   const porchLower = createBox(7.0, 0.15, 3.0, materials.paverPatio, [0, 0.075, 8.0], 'PorchLowerStep');
   // Upper landing step (5.2m x 1.8m x 0.15m at Y = 0.225m)
@@ -275,6 +331,34 @@ export function buildArchitecture(scene) {
   // Concealed warm LED step light strip under upper landing bullnose
   const stepLedStrip = createBox(5.0, 0.015, 0.02, materials.ceilingCoveGlow, [0, 0.215, 8.3], 'StepLEDLight', false, false);
   floorsGroup.add(porchLower, porchUpper, stepLedStrip);
+
+  // Front Stone Pathway Leading Toward Entrance (W: 3.2m, L: 5.5m from Z = 9.0 to 14.5)
+  const frontWalkway = createBox(3.2, 0.04, 5.5, materials.paverPatio, [0, 0.02, 11.75], 'FrontWalkwayPavers');
+  // Flanking Front Manicured Lawns
+  const frontLawnLeft = createBox(5.5, 0.02, 6.0, materials.grass, [-4.5, 0.01, 11.0], 'FrontLawnLeft');
+  const frontLawnRight = createBox(5.5, 0.02, 6.0, materials.grass, [4.5, 0.01, 11.0], 'FrontLawnRight');
+  floorsGroup.add(frontWalkway, frontLawnLeft, frontLawnRight);
+
+  // Architectural Low Planter Boxes Flanking Entrance Steps
+  const planterLeft = createBox(1.0, 0.5, 2.6, materials.stoneAccentWall, [-2.6, 0.25, 7.8], 'EntrancePlanterLeft');
+  const planterRight = createBox(1.0, 0.5, 2.6, materials.stoneAccentWall, [2.6, 0.25, 7.8], 'EntrancePlanterRight');
+  const hedgeLeft = createBox(0.8, 0.35, 2.4, materials.grass, [-2.6, 0.6, 7.8], 'EntranceHedgeLeft');
+  const hedgeRight = createBox(0.8, 0.35, 2.4, materials.grass, [2.6, 0.6, 7.8], 'EntranceHedgeRight');
+  floorsGroup.add(planterLeft, planterRight, hedgeLeft, hedgeRight);
+
+  // Modern Architectural Pathway Bollard Lights (Warm 2700K Glow)
+  [
+    [-1.8, 9.6],
+    [1.8, 9.6],
+    [-1.8, 12.0],
+    [1.8, 12.0]
+  ].forEach(([bx, bz], idx) => {
+    const bollardBase = createBox(0.1, 0.65, 0.1, materials.blackMullion, [bx, 0.325, bz], `PathBollard_${idx}`);
+    const bollardHead = createBox(0.08, 0.05, 0.08, materials.ceilingCoveGlow, [bx, 0.62, bz], '', false, false);
+    const bollardLight = new THREE.PointLight(0xffecd0, 0.6, 2.8, 2);
+    bollardLight.position.set(bx, 0.62, bz);
+    floorsGroup.add(bollardBase, bollardHead, bollardLight);
+  });
 
   // F. Rear Landscaped Garden Terrace & Lawn
   // Terrace stone slabs (20.0m x 5.0m x 0.2m)
@@ -284,7 +368,11 @@ export function buildArchitecture(scene) {
   // West & East perimeter lawns
   const westLawn = createBox(4.0, 0.18, 26.0, materials.grass, [-12.0, -0.11, -2.0], 'WestPerimeterLawn');
   const eastLawn = createBox(4.0, 0.18, 26.0, materials.grass, [12.0, -0.11, -2.0], 'EastPerimeterLawn');
-  floorsGroup.add(rearPatio, rearLawn, westLawn, eastLawn);
+
+  // G. West Landscaped Garden Terrace directly outside Living Room Accessible Terrace Door
+  // Continuous honed stone pavers extending from facade out into the manicured garden (X: -9.84 to -12.8, Z: -2.5 to 6.4)
+  const westTerracePatio = createBox(3.2, 0.18, 9.2, materials.paverPatio, [-11.44, -0.09, 1.95], 'WestLivingTerracePatio');
+  floorsGroup.add(rearPatio, rearLawn, westLawn, eastLawn, westTerracePatio);
 
   archGroup.add(floorsGroup);
 
@@ -307,6 +395,22 @@ export function buildArchitecture(scene) {
   // Structural transom lintel beam above front door opening (from Y: 2.8m to 3.2m)
   wallsGroup.add(createBox(1.8, 0.4, 0.32, materials.creamWall, [0, 3.0, 6.34], 'FrontDoorHeaderLintel'));
 
+  // Architectural Portico / Cantilevered Entrance Canopy Roof (W: 4.2m, D: 2.2m)
+  wallsGroup.add(createBox(4.2, 0.18, 2.2, materials.blackMullion, [0, 3.29, 7.3], 'EntranceCanopyRoof'));
+  // Soffit downlight recessed into canopy
+  const canopyDownlight = new THREE.PointLight(0xffecd0, 1.0, 4.5, 2);
+  canopyDownlight.position.set(0, 3.1, 7.1);
+  wallsGroup.add(canopyDownlight);
+
+  // Luxury Architectural Exterior Wall Sconces on Entrance Piers
+  const sconceL = createBox(0.08, 0.44, 0.08, materials.brassMetal, [-1.2, 2.0, 6.52], 'SconceLeft');
+  const sconceLightL = new THREE.PointLight(0xffd8a8, 0.75, 3.2, 2);
+  sconceLightL.position.set(-1.2, 2.0, 6.64);
+  const sconceR = createBox(0.08, 0.44, 0.08, materials.brassMetal, [1.2, 2.0, 6.52], 'SconceRight');
+  const sconceLightR = new THREE.PointLight(0xffd8a8, 0.75, 3.2, 2);
+  sconceLightR.position.set(1.2, 2.0, 6.64);
+  wallsGroup.add(sconceL, sconceLightL, sconceR, sconceLightR);
+
   // Southwest corner return pier (X: -9.84, Z: 6.34)
   wallsGroup.add(createBox(0.32, wallH, 0.32, materials.creamWall, [-9.84, wallMidY, 6.34], 'CornerSW'));
   // Southeast corner return pier (X: 9.84, Z: 6.34)
@@ -316,10 +420,13 @@ export function buildArchitecture(scene) {
   wallsGroup.add(createBox(7.5, 0.3, 0.32, materials.creamWall, [5.75, 3.05, 6.34], 'FrontDiningGlassLintel'));
 
   // B. West Facade (Left, X = -9.84)
-  // Corner piers & structural lintel beam above panoramic glass wall (Z: -6.5 to 5.0)
+  // Corner piers & structural lintel beams above panoramic glass walls and accessible terrace door
   wallsGroup.add(createBox(0.32, wallH, 1.5, materials.creamWall, [-9.84, wallMidY, -7.25], 'WestWallPierNW'));
   wallsGroup.add(createBox(0.32, wallH, 1.5, materials.creamWall, [-9.84, wallMidY, 5.5], 'WestWallPierSW'));
-  wallsGroup.add(createBox(0.32, 0.3, 11.25, materials.creamWall, [-9.84, 3.05, -0.875], 'WestPanoramicGlassLintel'));
+  wallsGroup.add(createBox(0.32, 0.3, 5.4, materials.creamWall, [-9.84, 3.05, -4.3], 'WestBedGlassLintel'));
+  wallsGroup.add(createBox(0.32, 0.3, 1.7, materials.creamWall, [-9.84, 3.05, -0.65], 'WestLivingNorthGlassLintel'));
+  wallsGroup.add(createBox(0.32, 0.4, 1.6, materials.creamWall, [-9.84, 3.0, 1.0], 'AccessibleTerraceDoorLintel'));
+  wallsGroup.add(createBox(0.32, 0.3, 4.54, materials.creamWall, [-9.84, 3.05, 4.07], 'WestLivingSouthGlassLintel'));
 
   // C. East Facade (Right, X = 9.84)
   // Travertine clad feature exterior wall section in Dining: Z: 1.0 to 6.2 (L: 5.2m)
@@ -328,6 +435,7 @@ export function buildArchitecture(scene) {
   wallsGroup.add(createBox(0.32, wallH, 3.3, materials.creamWall, [9.84, wallMidY, -6.15], 'EastKitchenSolidWall'));
   // Kitchen window lintel and lower sill wall: Z: -4.5 to 1.0 (L: 5.5m)
   wallsGroup.add(createBox(0.32, 0.5, 5.5, materials.creamWall, [9.84, 2.95, -1.75], 'EastKitchenWindowLintel'));
+  // Kitchen lower sill wall
   wallsGroup.add(createBox(0.32, 0.9, 5.5, materials.creamWall, [9.84, 0.45, -1.75], 'EastKitchenWindowSillWall'));
 
   // D. North Facade (Rear Garden, Z = -7.84)
@@ -358,13 +466,13 @@ export function buildArchitecture(scene) {
   const showerNicheLed = createBox(0.02, 0.015, 0.78, materials.ceilingCoveGlow, [-1.91, 1.56, -6.5], 'ShowerNicheLED', false, false);
   wallsGroup.add(showerNicheBox, showerNicheLed);
 
-  // B. Living Room & Showroom Suite Divider Wall (Z = -1.5)
+  // B. Living Room & Master Suite Divider Wall (Z = -1.5)
   // Solid divider wall: X from -9.84 to -4.5 (W: 5.34m)
   wallsGroup.add(createBox(5.34, wallH, 0.15, materials.creamWall, [-7.17, wallMidY, -1.5], 'LivingBedroomDividerWall'));
-  // Right return pillar: X from -3.0 to -2.0 (W: 1.0m)
+  // Right return wall to bathroom corner: X from -3.0 to -2.0 (W: 1.0m)
   wallsGroup.add(createBox(1.0, wallH, 0.15, materials.creamWall, [-2.5, wallMidY, -1.5], 'LivingBedroomRightPillar'));
-  // Lintel beam over cased passage portal (X: -4.5 to -3.0, Clear opening W: 1.5m, H: 2.6m)
-  wallsGroup.add(createBox(1.5, 0.6, 0.15, materials.creamWall, [-3.75, 2.9, -1.5], 'ShowroomPassageHeaderLintel'));
+  // Lintel beam over Master Suite Coming Soon Door (X: -4.5 to -3.0, Clear opening W: 1.5m, H: 2.8m)
+  wallsGroup.add(createBox(1.5, 0.4, 0.15, materials.creamWall, [-3.75, 3.0, -1.5], 'ShowroomPassageHeaderLintel'));
 
   // Built-in Fluted Acoustic Media Feature Wall facing Living Room
   // Dimensions: W: 4.8m, H: 2.8m, D: 0.05m at Z = -1.40m
@@ -503,8 +611,14 @@ export function buildArchitecture(scene) {
   // Window 2: Front Dining Room Window (W: 7.5m, H: 3.0m, Z: 6.34)
   windowsGroup.add(createArchitecturalWindow(7.5, 3.0, [5.75, 1.5, 6.34], 0, 4, true, 0.22));
 
-  // Window 3: West Panoramic Glass Curtain Wall (W: 11.25m, H: 3.0m, X: -9.84)
-  windowsGroup.add(createArchitecturalWindow(11.25, 3.0, [-9.84, 1.5, -0.875], Math.PI / 2, 6, true, 0.24));
+  // Window 3A: West Master Bedroom Window Wall (Z: -7.0 to -1.6, W: 5.4m, H: 3.0m, X: -9.84)
+  windowsGroup.add(createArchitecturalWindow(5.4, 3.0, [-9.84, 1.5, -4.3], Math.PI / 2, 3, true, 0.24));
+
+  // Window 3B: West Living Room North Window (Z: -1.5 to 0.2, W: 1.7m, H: 3.0m, X: -9.84)
+  windowsGroup.add(createArchitecturalWindow(1.7, 3.0, [-9.84, 1.5, -0.65], Math.PI / 2, 1, true, 0.24));
+
+  // Window 3C: West Living Room South Window (Z: 1.8 to 6.34, W: 4.54m, H: 3.0m, X: -9.84)
+  windowsGroup.add(createArchitecturalWindow(4.54, 3.0, [-9.84, 1.5, 4.07], Math.PI / 2, 3, true, 0.24));
 
   // Window 4: East Kitchen Counter Garden Window (W: 5.5m, H: 1.6m, X: 9.84, Y: 1.7m)
   windowsGroup.add(createArchitecturalWindow(5.5, 1.6, [9.84, 1.7, -1.75], Math.PI / 2, 3, true, 0.28));
@@ -517,53 +631,228 @@ export function buildArchitecture(scene) {
   const doorsGroup = new THREE.Group();
   doorsGroup.name = 'DoorsAndHardware';
 
-  // --- A. MONUMENTAL FRONT ARCHITECTURAL PIVOT DOOR ---
-  // Opening: W: 1.8m, H: 2.8m at [0.0, 1.4, 6.34]
+  // Builder for permanently closed architectural Coming Soon doors with backlit plaques
+  const createComingSoonDoor = (w, h, pos, rotY, plaqueMaterial, roomTitle, isFrosted = false) => {
+    const doorGroup = new THREE.Group();
+    doorGroup.name = `ComingSoonDoor_${roomTitle.replace(/\s+/g, '_')}`;
+
+    const frameW = 0.07;
+    const frameD = 0.14;
+    // Casing jambs & head
+    doorGroup.add(createBox(frameW, h, frameD, materials.blackMullion, [-w / 2 + frameW / 2, h / 2, 0]));
+    doorGroup.add(createBox(frameW, h, frameD, materials.blackMullion, [w / 2 - frameW / 2, h / 2, 0]));
+    doorGroup.add(createBox(w, frameW, frameD, materials.blackMullion, [0, h - frameW / 2, 0]));
+
+    // Door Leaf
+    const leafW = w - frameW * 2;
+    const leafH = h - frameW;
+    const leafMat = isFrosted ? materials.frostedGlass : materials.slatWall;
+    const doorLeaf = createBox(leafW, leafH, 0.05, leafMat, [0, leafH / 2, 0], `DoorLeaf_${roomTitle}`);
+    doorGroup.add(doorLeaf);
+
+    // Slim metal border trim around leaf
+    doorGroup.add(createBox(leafW, 0.035, 0.054, materials.blackMullion, [0, leafH - 0.0175, 0]));
+    doorGroup.add(createBox(leafW, 0.035, 0.054, materials.blackMullion, [0, 0.0175, 0]));
+    doorGroup.add(createBox(0.035, leafH, 0.054, materials.blackMullion, [-leafW / 2 + 0.0175, leafH / 2, 0]));
+    doorGroup.add(createBox(0.035, leafH, 0.054, materials.blackMullion, [leafW / 2 - 0.0175, leafH / 2, 0]));
+
+    // Champagne Brass Vertical Pull Handle (1.6m H x 28mm W)
+    const handleX = leafW / 2 - 0.12;
+    const handleY = 1.25;
+    const handleOuter = createBox(0.028, 1.6, 0.02, materials.brassMetal, [handleX, handleY, 0.055]);
+    const standoffTop = createBox(0.024, 0.024, 0.035, materials.brassMetal, [handleX, handleY + 0.7, 0.035]);
+    const standoffBtm = createBox(0.024, 0.024, 0.035, materials.brassMetal, [handleX, handleY - 0.7, 0.035]);
+    doorGroup.add(handleOuter, standoffTop, standoffBtm);
+
+    // Architectural Backlit "COMING SOON" Plaque
+    const plaqueY = 1.55; // human eye height
+    // A. Frosted Lightbox Backplate with ambient warm glow
+    const backplate = createBox(0.48, 0.24, 0.008, materials.plaqueBackingGlow, [0, plaqueY, 0.03], '', false, false);
+    doorGroup.add(backplate);
+
+    // B. Brushed Metal Face Plaque with high-res crisp canvas text
+    const plaqueFace = createBox(0.46, 0.22, 0.012, plaqueMaterial, [0, plaqueY, 0.038], `Plaque_${roomTitle}`);
+    doorGroup.add(plaqueFace);
+
+    // C. Subtle warm architectural point light illuminating the plaque & door surface
+    const plaqueLight = new THREE.PointLight(0xffecd0, 0.75, 2.0, 2);
+    plaqueLight.position.set(0, plaqueY, 0.16);
+    doorGroup.add(plaqueLight);
+
+    doorGroup.position.set(pos[0], pos[1], pos[2]);
+    doorGroup.rotation.y = rotY;
+
+    doorGroup.userData = {
+      isComingSoonDoor: true,
+      roomTitle
+    };
+
+    return doorGroup;
+  };
+
+  // --- CLOSED COMING SOON DOORS ---
+  // Only Master Bedroom Suite and Spa Bathroom are closed with architectural COMING SOON plaques
+  // 1. Master Bedroom Suite (North wall: Z = -1.5, X = -3.75)
+  doorsGroup.add(createComingSoonDoor(1.5, 2.8, [-3.75, 0, -1.5], 0, materials.bedroomPlaque, 'Bedroom Suite', false));
+
+  // --- THE MAIN INTERACTIVE FRONT ENTRANCE PIVOT DOOR ---
+  // Opening: W: 1.8m, H: 2.8m on South front facade at X = 0.0, Z = 6.34 (spans X: -0.9 to 0.9)
   const frontDoorSystem = new THREE.Group();
-  frontDoorSystem.name = 'GrandPivotFrontDoorSystem';
+  frontDoorSystem.name = 'InteractiveFrontDoorSystem';
+  frontDoorSystem.position.set(0.0, 0, 6.34);
 
-  // 1. Heavy Black Aluminum Casing / Outer Jamb (100mm x 140mm)
-  frontDoorSystem.add(createBox(0.08, 2.8, 0.14, materials.blackMullion, [-0.86, 1.4, 0]));
-  frontDoorSystem.add(createBox(0.08, 2.8, 0.14, materials.blackMullion, [0.86, 1.4, 0]));
-  frontDoorSystem.add(createBox(1.8, 0.08, 0.14, materials.blackMullion, [0, 2.84, 0]));
+  const fW = 1.8;
+  const fH = 2.8;
+  const fFrameW = 0.08;
+  const fFrameD = 0.16;
 
-  // 2. Door Leaf (1.64m W x 2.76m H x 80mm Thick with Vertical Fluted Teak)
-  const pivotDoorLeaf = createBox(1.64, 2.76, 0.08, materials.timberDoor, [0, 1.38, 0], 'FrontPivotDoorLeaf');
-  pivotDoorLeaf.userData = { productId: 'product-18', isInteractive: true };
-  frontDoorSystem.add(pivotDoorLeaf);
+  // Outer Black Anodized Aluminum Casing / Outer Jamb
+  frontDoorSystem.add(createBox(fFrameW, fH, fFrameD, materials.blackMullion, [-fW / 2 + fFrameW / 2, fH / 2, 0]));
+  frontDoorSystem.add(createBox(fFrameW, fH, fFrameD, materials.blackMullion, [fW / 2 - fFrameW / 2, fH / 2, 0]));
+  frontDoorSystem.add(createBox(fW, fFrameW, fFrameD, materials.blackMullion, [0, fH - fFrameW / 2, 0]));
+  frontDoorSystem.add(createBox(fW, 0.015, fFrameD, materials.sliderTrack, [0, 0.0075, 0]));
 
-  // 3. Stainless Steel Top & Bottom Pivot Hinge Plates (80mm circular discs)
-  const pivotBottom = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.015, 24), materials.hingeMat);
-  pivotBottom.position.set(-0.55, 0.008, 0);
-  const pivotTop = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.015, 24), materials.hingeMat);
-  pivotTop.position.set(-0.55, 2.77, 0);
-  frontDoorSystem.add(pivotBottom, pivotTop);
+  // Front Door Pivot Group (Hinged at the right jamb at local X = fW / 2 - 0.08 = 0.82)
+  const frontDoorPivot = new THREE.Group();
+  frontDoorPivot.name = 'FrontDoorPivot';
+  frontDoorPivot.position.set(fW / 2 - 0.08, 0, 0);
 
-  // 4. Monumental 1.8m Brushed Champagne Brass Vertical Rectangular Pull Handle
-  // Standoff brackets
-  const standoff1 = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 2.0, 0.055]);
-  const standoff2 = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 0.8, 0.055]);
-  // Vertical handle bar (1.8m H x 35mm W x 20mm D)
-  const handleBarOuter = createBox(0.035, 1.8, 0.02, materials.brassMetal, [0.62, 1.4, 0.095], 'FrontHandleOuter');
-  handleBarOuter.userData = { productId: 'product-18', isInteractive: true };
-  // Matching interior handle
-  const standoff1In = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 2.0, -0.055]);
-  const standoff2In = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 0.8, -0.055]);
-  const handleBarInner = createBox(0.035, 1.8, 0.02, materials.brassMetal, [0.62, 1.4, -0.095], 'FrontHandleInner');
-  frontDoorSystem.add(standoff1, standoff2, handleBarOuter, standoff1In, standoff2In, handleBarInner);
+  const fLeafW = fW - fFrameW * 2 - 0.02; // 1.62m
+  const fLeafH = fH - fFrameW - 0.02;    // 2.70m
+  const fLeafCenterX = -fLeafW / 2;
 
-  // 5. Architectural Key Cylinder Escutcheon & Strike Plate
-  const keyEscutcheon = createBox(0.035, 0.08, 0.006, materials.brassMetal, [0.72, 1.05, 0.043]);
-  const deadboltStrike = createBox(0.025, 0.12, 0.006, materials.brassMetal, [0.81, 1.05, 0.0]);
-  frontDoorSystem.add(keyEscutcheon, deadboltStrike);
+  const frontDoorLeaf = new THREE.Group();
+  frontDoorLeaf.name = 'FrontDoorLeaf';
 
-  // Transom Glass Panel Above Pivot Door (W: 1.8m, H: 0.36m, Y: 3.02m)
-  const transomGlass = createBox(1.72, 0.34, 0.024, materials.clearGlass, [0, 3.02, 0], 'DoorTransomGlass', false, false);
-  const transomMullion = createBox(1.8, 0.05, 0.12, materials.blackMullion, [0, 3.19, 0]);
-  frontDoorSystem.add(transomGlass, transomMullion);
+  // Solid Vertical Fluted Oak/Timber Core
+  const fCore = createBox(fLeafW, fLeafH, 0.07, materials.timberDoor, [fLeafCenterX, fLeafH / 2, 0], 'FrontDoorCore', true, true);
+  frontDoorLeaf.add(fCore);
 
-  frontDoorSystem.position.set(0, 0, 6.34);
+  // Perimeter Black Metal Bevel Trim
+  frontDoorLeaf.add(createBox(fLeafW, 0.035, 0.075, materials.blackMullion, [fLeafCenterX, fLeafH - 0.0175, 0]));
+  frontDoorLeaf.add(createBox(fLeafW, 0.035, 0.075, materials.blackMullion, [fLeafCenterX, 0.0175, 0]));
+  frontDoorLeaf.add(createBox(0.035, fLeafH, 0.075, materials.blackMullion, [fLeafCenterX - fLeafW / 2 + 0.0175, fLeafH / 2, 0]));
+  frontDoorLeaf.add(createBox(0.035, fLeafH, 0.075, materials.blackMullion, [fLeafCenterX + fLeafW / 2 - 0.0175, fLeafH / 2, 0]));
+
+  // Monumental Brushed Champagne Brass Vertical Pull Handle (2.0m H x 35mm W)
+  const fHandleX = fLeafCenterX - fLeafW / 2 + 0.16;
+  const fHandleY = 1.35;
+  // Exterior handle (facing outside, +Z)
+  const fHBarOut = createBox(0.035, 2.0, 0.025, materials.brassMetal, [fHandleX, fHandleY, 0.065]);
+  const fStandOut1 = createBox(0.028, 0.028, 0.05, materials.brassMetal, [fHandleX, fHandleY + 0.8, 0.035]);
+  const fStandOut2 = createBox(0.028, 0.028, 0.05, materials.brassMetal, [fHandleX, fHandleY - 0.8, 0.035]);
+  // Interior handle (facing foyer, -Z)
+  const fHBarIn = createBox(0.035, 2.0, 0.025, materials.brassMetal, [fHandleX, fHandleY, -0.065]);
+  const fStandIn1 = createBox(0.028, 0.028, 0.05, materials.brassMetal, [fHandleX, fHandleY + 0.8, -0.035]);
+  const fStandIn2 = createBox(0.028, 0.028, 0.05, materials.brassMetal, [fHandleX, fHandleY - 0.8, -0.035]);
+  frontDoorLeaf.add(fHBarOut, fStandOut1, fStandOut2, fHBarIn, fStandIn1, fStandIn2);
+
+  // Heavy-Duty Pivot Discs
+  const fPivotBtm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 24), materials.hingeMat);
+  fPivotBtm.position.set(0, 0.01, 0);
+  const fPivotTop = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 24), materials.hingeMat);
+  fPivotTop.position.set(0, fH - 0.01, 0);
+  frontDoorPivot.add(fPivotBtm, fPivotTop);
+
+  frontDoorPivot.add(frontDoorLeaf);
+  frontDoorSystem.add(frontDoorPivot);
   doorsGroup.add(frontDoorSystem);
+
+  // --- THE ONE SPECIAL ACCESSIBLE TERRACE PIVOT DOOR ---
+  // Opening: W: 1.6m, H: 2.8m on West panoramic facade at X = -9.84, Z = 1.0 (spans Z: 0.2 to 1.8)
+  const terraceDoorSystem = new THREE.Group();
+  terraceDoorSystem.name = 'AccessibleTerraceDoorSystem';
+  terraceDoorSystem.position.set(-9.84, 0, 1.0);
+  terraceDoorSystem.rotation.y = Math.PI / 2;
+
+  const tW = 1.6;
+  const tH = 2.8;
+  const tFrameW = 0.07;
+  const tFrameD = 0.14;
+
+  // 1. Black Aluminum Casing / Outer Jamb
+  terraceDoorSystem.add(createBox(tFrameW, tH, tFrameD, materials.blackMullion, [-tW / 2 + tFrameW / 2, tH / 2, 0]));
+  terraceDoorSystem.add(createBox(tFrameW, tH, tFrameD, materials.blackMullion, [tW / 2 - tFrameW / 2, tH / 2, 0]));
+  terraceDoorSystem.add(createBox(tW, tFrameW, tFrameD, materials.blackMullion, [0, tH - tFrameW / 2, 0]));
+  terraceDoorSystem.add(createBox(tW, 0.015, tFrameD, materials.sliderTrack, [0, 0.0075, 0]));
+
+  // 2. Door Pivot Hinge Group (Hinged on the South jamb at local X = tW/2 - 0.06 = 0.74)
+  const terraceDoorPivot = new THREE.Group();
+  terraceDoorPivot.name = 'TerraceDoorPivot';
+  terraceDoorPivot.position.set(tW / 2 - 0.06, 0, 0);
+
+  const tLeafW = tW - tFrameW * 2 - 0.02; // 1.44m
+  const tLeafH = tH - tFrameW - 0.02; // 2.71m
+  const tLeafCenterX = -tLeafW / 2;
+
+  const terraceDoorLeaf = new THREE.Group();
+  terraceDoorLeaf.name = 'TerraceDoorLeaf';
+
+  // Architectural Low-Iron Double Glazing
+  const tGlass = createBox(tLeafW - 0.1, tLeafH - 0.1, 0.028, materials.clearGlass, [tLeafCenterX, tLeafH / 2, 0], 'TerraceDoorGlass', false, false);
+  terraceDoorLeaf.add(tGlass);
+
+  // Slim Black Aluminum Stiles & Rails
+  terraceDoorLeaf.add(createBox(tLeafW, 0.05, 0.045, materials.blackMullion, [tLeafCenterX, tLeafH - 0.025, 0]));
+  terraceDoorLeaf.add(createBox(tLeafW, 0.08, 0.045, materials.blackMullion, [tLeafCenterX, 0.04, 0]));
+  terraceDoorLeaf.add(createBox(0.05, tLeafH, 0.045, materials.blackMullion, [tLeafCenterX - tLeafW / 2 + 0.025, tLeafH / 2, 0]));
+  terraceDoorLeaf.add(createBox(0.05, tLeafH, 0.045, materials.blackMullion, [tLeafCenterX + tLeafW / 2 - 0.025, tLeafH / 2, 0]));
+
+  // Brushed Champagne Brass Vertical Pull Handle (1.8m H x 32mm W)
+  const tHandleX = tLeafCenterX - tLeafW / 2 + 0.14;
+  const tHandleY = 1.35;
+  // Interior handle (towards Living Room, -Z local in doorSystem coordinate)
+  const tHBarIn = createBox(0.032, 1.8, 0.022, materials.brassMetal, [tHandleX, tHandleY, -0.055]);
+  const tStandIn1 = createBox(0.025, 0.025, 0.045, materials.brassMetal, [tHandleX, tHandleY + 0.75, -0.028]);
+  const tStandIn2 = createBox(0.025, 0.025, 0.045, materials.brassMetal, [tHandleX, tHandleY - 0.75, -0.028]);
+  // Exterior handle (towards Terrace, +Z local)
+  const tHBarOut = createBox(0.032, 1.8, 0.022, materials.brassMetal, [tHandleX, tHandleY, 0.055]);
+  const tStandOut1 = createBox(0.025, 0.025, 0.045, materials.brassMetal, [tHandleX, tHandleY + 0.75, 0.028]);
+  const tStandOut2 = createBox(0.025, 0.025, 0.045, materials.brassMetal, [tHandleX, tHandleY - 0.75, 0.028]);
+  terraceDoorLeaf.add(tHBarIn, tStandIn1, tStandIn2, tHBarOut, tStandOut1, tStandOut2);
+
+  // Pivot Discs
+  const tPivotBottom = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.015, 20), materials.hingeMat);
+  tPivotBottom.position.set(0, 0.008, 0);
+  const tPivotTop = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.015, 20), materials.hingeMat);
+  tPivotTop.position.set(0, tH - 0.008, 0);
+  terraceDoorPivot.add(tPivotBottom, tPivotTop);
+
+  terraceDoorPivot.add(terraceDoorLeaf);
+  terraceDoorSystem.add(terraceDoorPivot);
+  doorsGroup.add(terraceDoorSystem);
+
+  // --- SHEER LINEN WAVE CURTAINS ---
+  const curtainsGroup = new THREE.Group();
+  curtainsGroup.name = 'LivingRoomSheerCurtains';
+
+  const addCurtainPanel = (w, h, pos, rotY) => {
+    const panel = new THREE.Group();
+    const numFolds = Math.floor(w / 0.12);
+    const foldStep = w / numFolds;
+    for (let f = 0; f < numFolds; f++) {
+      const fold = createBox(foldStep * 0.9, h, 0.03 + (f % 2) * 0.02, materials.curtain, [
+        -w / 2 + f * foldStep + foldStep / 2,
+        h / 2,
+        (f % 2 === 0 ? 0.012 : -0.012)
+      ], '', false, true);
+      panel.add(fold);
+    }
+    panel.add(createBox(w + 0.04, 0.02, 0.04, materials.blackMullion, [0, h + 0.01, 0]));
+    panel.position.set(pos[0], pos[1], pos[2]);
+    panel.rotation.y = rotY;
+    curtainsGroup.add(panel);
+  };
+
+  // South panoramic window curtains
+  addCurtainPanel(1.2, 3.1, [-9.2, 0.05, 6.22], 0);
+  addCurtainPanel(1.0, 3.1, [-2.2, 0.05, 6.22], 0);
+
+  // West panoramic window curtains
+  addCurtainPanel(1.0, 3.1, [-9.72, 0.05, -1.1], Math.PI / 2);
+  addCurtainPanel(1.2, 3.1, [-9.72, 0.05, 5.8], Math.PI / 2);
+
+  archGroup.add(curtainsGroup);
 
   // --- B. SPA BATHROOM FLUSH INTERIOR DOOR ---
   // Opening: W: 1.0m, H: 2.4m at [0.0, 1.2, -3.0]
@@ -578,6 +867,13 @@ export function buildArchitecture(scene) {
   // 2. Door Leaf (0.95m W x 2.38m H x 45mm Thick solid flush door)
   const bathDoorLeaf = createBox(0.94, 2.37, 0.045, materials.interiorDoorLeaf, [0, 1.185, 0], 'BathDoorLeaf');
   bathDoorSystem.add(bathDoorLeaf);
+
+  // 2b. Spa Bath Coming Soon Plaque
+  const bathBackplate = createBox(0.42, 0.2, 0.008, materials.plaqueBackingGlow, [0, 1.55, 0.025], '', false, false);
+  const bathPlaqueFace = createBox(0.40, 0.18, 0.012, materials.bathPlaque, [0, 1.55, 0.032], 'Plaque_SpaBath');
+  const bathPlaqueLight = new THREE.PointLight(0xffecd0, 0.6, 1.8, 2);
+  bathPlaqueLight.position.set(0, 1.55, 0.15);
+  bathDoorSystem.add(bathBackplate, bathPlaqueFace, bathPlaqueLight);
 
   // 3. 3x Concealed Satin Nickel Hinges on Jamb
   [0.35, 1.2, 2.05].forEach((hy) => {
@@ -766,12 +1062,36 @@ export function buildArchitecture(scene) {
     gardenGroup.add(bush);
   });
 
+  // West Garden Planter with Bamboo & Soft Architectural Greenery along terrace
+  const westPlanter = createBox(0.8, 0.45, 8.2, planterMat, [-12.6, 0.225, 2.0], 'WestGardenPlanter');
+  gardenGroup.add(westPlanter);
+  for (let b = -1.5; b <= 5.5; b += 0.85) {
+    const bamboo = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 3.2, 8), bambooStemsMat);
+    bamboo.position.set(-12.6 + (Math.random() - 0.5) * 0.1, 1.6, b + (Math.random() - 0.5) * 0.15);
+    bamboo.castShadow = true;
+    gardenGroup.add(bamboo);
+
+    const leafPuff = new THREE.Mesh(new THREE.DodecahedronGeometry(0.36 + Math.random() * 0.15, 1), foliageMat);
+    leafPuff.position.set(bamboo.position.x, 2.6 + Math.random() * 0.5, b);
+    leafPuff.scale.set(1.15, 0.85, 1.0);
+    leafPuff.castShadow = true;
+    gardenGroup.add(leafPuff);
+  }
+
   archGroup.add(gardenGroup);
 
   return {
     group: archGroup,
     ceilingGroup,
     materials,
-    frontDoorSystem
+    frontDoorSystem,
+    accessibleDoor: {
+      pivot: frontDoorPivot,
+      centerPos: new THREE.Vector3(0.0, 1.4, 6.34)
+    },
+    terraceDoor: {
+      pivot: terraceDoorPivot,
+      centerPos: new THREE.Vector3(-9.84, 1.4, 1.0)
+    }
   };
 }

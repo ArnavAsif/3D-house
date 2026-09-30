@@ -1,229 +1,148 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Compass,
-  Eye,
   Layers,
   Moon,
   Sun,
-  ShoppingCart,
   X,
   Sparkles,
-  Info
+  Info,
+  ShoppingBag
 } from 'lucide-react';
-import { positioningService } from '@/lib/showroom/positioningService';
-import { productService } from '@/lib/products/productService';
-import ProductModal from '@/components/products/ProductModal';
-import CartDrawer from '@/components/cart/CartDrawer';
 import Minimap from './Minimap';
 import MobileControls from './MobileControls';
 import SpecsModal from './SpecsModal';
-import ProductCalloutsLayer from './ProductCalloutsLayer';
+import ProductModal from '@/components/products/ProductModal';
+import CartDrawer from '@/components/cart/CartDrawer';
 import { CartItem } from '@/types/cart';
 import { Product, ProductVariant } from '@/types/product';
 
-import { ShowroomProductWithDetails } from '@/types/showroom';
-
 interface ShowroomOverlayProps {
-  showroomProducts?: ShowroomProductWithDetails[];
-  activeProductId: string | null;
-  hoveredProductId: string | null;
-  onCloseProduct: () => void;
-  onSelectProduct: (id: string) => void;
-  onHoverProduct?: (id: string | null) => void;
-  onVariantChange: (id: string, variant: ProductVariant) => void;
   currentMode: string;
-  onModeChange: (mode: string) => void;
+  onModeChange?: (mode: string) => void;
   isNight: boolean;
   onToggleNight: () => void;
   showCeiling: boolean;
   onToggleCeiling: () => void;
-  onTeleportRoom: (roomId: string) => void;
   playerPosition: { x: number; z: number; yaw: number };
   onJoystickMove?: (vector: { x: number; y: number }) => void;
+  doorState?: { isNear: boolean; isOpen: boolean };
+  onToggleDoor?: () => void;
+  activeProduct?: string | null;
+  onCloseProduct?: () => void;
 }
 
 /**
  * ShowroomOverlay
- * Top-level luxury HUD overlay: Navigation header, 2D Floor Plan Radar Minimap,
- * room jumper, modal displays, and Supabase-backed cart drawer.
+ * Top-level luxury architectural HUD overlay:
+ * - Brand navigation header with Day / Night toggle, Ceiling cutaway, and Cart bag
+ * - Minimal luxury Front Entrance Door interaction prompt [E] OPEN / CLOSE
+ * - Single interactive product detail modal & cart checkout integration
+ * - 2D Floor Plan Radar Minimap (Open-plan Living Room & Entrance)
+ * - Architectural blueprint specs modal
+ * - Mobile walkthrough touch controls
  */
 export default function ShowroomOverlay({
-  showroomProducts,
-  activeProductId,
-  hoveredProductId,
-  onCloseProduct,
-  onSelectProduct,
-  onHoverProduct,
-  onVariantChange,
   currentMode,
   onModeChange,
   isNight,
   onToggleNight,
   showCeiling,
   onToggleCeiling,
-  onTeleportRoom,
   playerPosition,
-  onJoystickMove
+  onJoystickMove,
+  doorState,
+  onToggleDoor,
+  activeProduct,
+  onCloseProduct
 }: ShowroomOverlayProps) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [showArchSpecs, setShowArchSpecs] = useState(false);
   const [showControlsHint, setShowControlsHint] = useState(true);
-  const [hoveredProductName, setHoveredProductName] = useState<string>('Product');
-  const [cursorPos, setCursorPos] = useState({ x: -9999, y: -9999 });
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  useEffect(() => {
-    const checkTouch = () => {
-      const hasCoarse = window.matchMedia('(pointer: coarse)').matches;
-      const hasFine = window.matchMedia('(pointer: fine)').matches;
-      setIsTouchDevice(hasCoarse && !hasFine);
-    };
-    checkTouch();
-    window.addEventListener('resize', checkTouch);
-    return () => window.removeEventListener('resize', checkTouch);
-  }, []);
-
-  useEffect(() => {
-    if (isTouchDevice) return;
-    const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
-      setCursorPos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    return () => window.removeEventListener('pointermove', handlePointerMove);
-  }, [isTouchDevice]);
-
-  const rooms = positioningService.getRooms();
-
-  const spatialTargets = useMemo(() => {
-    if (showroomProducts && showroomProducts.length > 0) {
-      return showroomProducts.map((sp) => ({
-        showroomId: sp.showroomId,
-        productId: sp.productId,
-        position: sp.position,
-        rotation: sp.rotation,
-        scale: sp.scale,
-        hotspotOffset: [0, 0.85, 0] as [number, number, number],
-        clearanceRadiusM: sp.interactionRadius,
-        room: sp.product.room,
-        displayZone: sp.product.displayZone,
-        placementType: sp.product.placementType as any,
-        modelUrl: sp.modelUrl
-      }));
-    }
-    return positioningService.getAllPositions();
-  }, [showroomProducts]);
-
-  // Hide controls hint after 9s
+  // Hide controls hint after 9 seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowControlsHint(false), 9000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Update hover product name dynamically via productService
-  useEffect(() => {
-    if (!hoveredProductId) return;
-    productService.getProduct(hoveredProductId).then((p) => {
-      if (p) setHoveredProductName(p.title || p.name);
-    }).catch(() => {
-      setHoveredProductName(hoveredProductId);
-    });
-  }, [hoveredProductId]);
-
   const handleAddToCart = (item: { product: Product; variant: ProductVariant; quantity: number }) => {
-    setCart((prev) => {
-      const existingIdx = prev.findIndex(
-        (ci) =>
-          (ci.productId === item.product.id || ci.product?.id === item.product.id) &&
-          (ci.variantId === item.variant?.id || ci.variant?.id === item.variant?.id)
-      );
-      if (existingIdx >= 0) {
-        const updated = [...prev];
-        updated[existingIdx].quantity += item.quantity;
-        return updated;
-      }
-      return [
-        ...prev,
-        {
-          id: `${item.product.id}-${item.variant.id}`,
-          productId: item.product.id,
-          variantId: item.variant.id,
-          product: item.product,
-          variant: item.variant,
-          quantity: item.quantity,
-          unitPrice: item.variant.price || item.product.price
-        }
-      ];
-    });
+    const newItem: CartItem = {
+      productId: item.product.id,
+      variantId: item.variant.id,
+      quantity: item.quantity,
+      unitPrice: typeof item.variant.price === 'string' ? parseFloat(item.variant.price) : Number(item.variant.price || item.product.price),
+      product: item.product,
+      variant: item.variant
+    };
+
+    setCartItems((prev) => [...prev, newItem]);
+    if (onCloseProduct) onCloseProduct();
+    setIsCartOpen(true);
   };
 
-  const handleRemoveFromCart = (idx: number) => {
-    setCart((prev) => prev.filter((_, i) => i !== idx));
+  const handleRemoveCartItem = (index: number) => {
+    setCartItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleClearCart = () => {
-    setCart([]);
-  };
-
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartCount = cartItems.reduce((acc, it) => acc + it.quantity, 0);
 
   return (
     <>
-      {/* 1. TOP NAVIGATION HEADER */}
+      {/* 1. TOP LUXURY NAVIGATION HEADER */}
       <header className="showroom-nav-header">
         <div className="nav-brand-section">
           <div className="brand-icon-wrapper">
             <Compass size={22} className="brand-compass-icon" />
           </div>
           <div className="brand-text-block">
-            <span className="brand-supertitle">ARCHITECTURAL 3D SHOWROOM</span>
-            <h1 className="brand-maintitle">Villa Lumina</h1>
+            <span className="brand-supertitle">ARCHITECTURAL VISUALIZATION</span>
+            <h1 className="brand-maintitle">Villa Lumina — Living Room</h1>
           </div>
-        </div>
-
-        {/* Room Teleport Quick-Pills */}
-        <div className="room-nav-pills">
-          {rooms.map((room) => (
-            <button
-              key={room.id}
-              className="room-pill-btn"
-              onClick={() => onTeleportRoom(room.id)}
-            >
-              {room.name}
-            </button>
-          ))}
         </div>
 
         {/* Action Toggles */}
         <div className="nav-actions-section">
-          {/* Camera View Mode */}
-          <div className="mode-toggle-group">
-            <button
-              className={`mode-btn ${currentMode === 'DOLLHOUSE' ? 'active' : ''}`}
-              onClick={() => onModeChange('DOLLHOUSE')}
-              title="Dollhouse Axonometric View"
-            >
-              <Layers size={15} />
-              <span>Dollhouse</span>
-            </button>
-            <button
-              className={`mode-btn ${currentMode === 'FIRST_PERSON' ? 'active' : ''}`}
-              onClick={() => onModeChange('FIRST_PERSON')}
-              title="First-Person Walkthrough"
-            >
-              <Eye size={15} />
-              <span>Walkthrough</span>
-            </button>
-          </div>
+          {/* Cart Drawer Trigger */}
+          <button
+            className={`icon-action-btn ${totalCartCount > 0 ? 'active' : ''}`}
+            onClick={() => setIsCartOpen(true)}
+            title="View Shopping Cart"
+            aria-label="View Cart"
+            style={{ position: 'relative' }}
+          >
+            <ShoppingBag size={18} />
+            {totalCartCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  backgroundColor: 'var(--color-gold, #c8a462)',
+                  color: '#111',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  borderRadius: '50%',
+                  width: '18px',
+                  height: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {totalCartCount}
+              </span>
+            )}
+          </button>
 
           {/* Lighting Mode Switcher */}
           <button
             className={`icon-action-btn ${isNight ? 'active-night' : ''}`}
             onClick={onToggleNight}
-            title={isNight ? 'Switch to Golden Hour Day' : 'Switch to Moody Evening'}
+            title={isNight ? 'Switch to Golden Hour Daylight' : 'Switch to Moody Ambient Evening'}
             aria-label="Toggle Lighting Mode"
           >
             {isNight ? <Moon size={18} /> : <Sun size={18} />}
@@ -233,7 +152,7 @@ export default function ShowroomOverlay({
           <button
             className={`icon-action-btn ${showCeiling ? 'active' : ''}`}
             onClick={onToggleCeiling}
-            title={showCeiling ? 'Hide Ceiling (Cutaway)' : 'Show Full Ceiling'}
+            title={showCeiling ? 'Hide Ceiling (Cutaway)' : 'Show Full Coffered Ceiling'}
             aria-label="Toggle Ceiling"
           >
             <Layers size={18} />
@@ -248,35 +167,32 @@ export default function ShowroomOverlay({
           >
             <Info size={18} />
           </button>
-
-          {/* Shopping Cart Button */}
-          <button
-            className="cart-toggle-btn"
-            onClick={() => setIsCartOpen(true)}
-            title="View Showroom Cart"
-            aria-label="Open Shopping Cart"
-          >
-            <ShoppingCart size={18} />
-            <span className="cart-label">Cart</span>
-            {cartItemCount > 0 && <span className="cart-badge">{cartItemCount}</span>}
-          </button>
         </div>
       </header>
 
-      {/* 2. MODERN PRODUCT CALLOUT HUD (Leader line & frosted badge matching reference photo) */}
-      <ProductCalloutsLayer
-        hoveredProductId={hoveredProductId}
-        onSelectProduct={onSelectProduct}
-        onHoverProduct={onHoverProduct || (() => {})}
-        targets={spatialTargets}
-      />
+      {/* 2. MINIMAL LUXURY FRONT ENTRANCE DOOR PROMPT */}
+      {doorState?.isNear && (
+        <div className="luxury-door-prompt-container">
+          <button
+            className="luxury-door-prompt-btn"
+            onClick={onToggleDoor}
+            title="Press [E] or click to open/close front entrance door"
+          >
+            <span className="door-prompt-action">{doorState.isOpen ? 'CLOSE' : 'OPEN'}</span>
+            <span className="door-prompt-sub">
+              <span className="door-prompt-key">KEY [E]</span>
+              <span>MAIN ENTRANCE DOOR</span>
+            </span>
+          </button>
+        </div>
+      )}
 
-      {/* 2. CONTROLS GUIDE OVERLAY */}
+      {/* 3. FIRST-PERSON CONTROLS GUIDE OVERLAY */}
       {showControlsHint && (
         <div className="controls-hint-card">
           <div className="hint-header">
             <Sparkles size={16} color="var(--color-gold)" />
-            <span>INTERACTIVE SHOWROOM CONTROLS</span>
+            <span>VILLA LUMINA WALKTHROUGH</span>
             <button
               className="hint-close-btn"
               onClick={() => setShowControlsHint(false)}
@@ -291,62 +207,53 @@ export default function ShowroomOverlay({
               <span className="kbd-pill">A</span>
               <span className="kbd-pill">S</span>
               <span className="kbd-pill">D</span>
-              <span className="hint-text">or Arrow Keys to walk through the villa</span>
+              <span className="hint-text">or Arrow Keys to walk toward the entrance</span>
             </div>
             <div className="hint-row">
               <span className="kbd-pill">Mouse Drag</span>
-              <span className="hint-text">Look around in 360° or rotate dollhouse</span>
+              <span className="hint-text">Look around in full 360° first-person view</span>
             </div>
             <div className="hint-row">
-              <span className="hotspot-mini-dot"></span>
-              <span className="hint-text">Click any golden pin or furniture piece to inspect details</span>
+              <span className="kbd-pill">E</span>
+              <span className="hint-text">Approach front door to OPEN and enter the Living Room</span>
+            </div>
+            <div className="hint-row">
+              <span className="kbd-pill">Click Chair</span>
+              <span className="hint-text">Inspect the Aura Modern Lounge Chair & Add to Cart</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3. Small Floating Product Name Cursor Indicator (Desktop Interaction) */}
-      {!isTouchDevice && hoveredProductId && !activeProductId && cursorPos.x > 0 && (
-        <div
-          className="product-cursor-indicator active"
-          style={{
-            transform: `translate3d(${cursorPos.x + 16}px, ${cursorPos.y + 16}px, 0)`
-          }}
-        >
-          <span className="indicator-dot" />
-          <span className="indicator-title">{hoveredProductName}</span>
-          <span className="indicator-action">Inspect</span>
-        </div>
+      {/* 4. SINGLE INTERACTIVE PRODUCT MODAL */}
+      {activeProduct && (
+        <ProductModal
+          productId={activeProduct}
+          onClose={() => onCloseProduct && onCloseProduct()}
+          onAddToCart={handleAddToCart}
+        />
       )}
 
-      {/* 4. INTERACTIVE 2D MINIMAP HUD */}
-      <Minimap
-        playerPosition={playerPosition}
-        hoveredProductId={hoveredProductId}
-        onSelectProduct={onSelectProduct}
-      />
-
-      {/* 5. VIRTUAL TOUCH JOYSTICK FOR MOBILE WALKTHROUGH */}
-      <MobileControls
-        currentMode={currentMode}
-        onJoystickMove={onJoystickMove}
-      />
-
-      {/* 6. DYNAMIC SUPABASE COMMERCE PRODUCT DETAIL MODAL */}
-      <ProductModal
-        productId={activeProductId}
-        onClose={onCloseProduct}
-        onAddToCart={handleAddToCart}
-        onVariantChange={onVariantChange}
-      />
-
-      {/* 7. CUSTOM COMMERCE SHOPPING CART DRAWER */}
+      {/* 5. SLIDE-OVER LUXURY CART DRAWER */}
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-        items={cart}
-        onRemoveItem={handleRemoveFromCart}
-        onClearCart={handleClearCart}
+        items={cartItems}
+        onRemoveItem={handleRemoveCartItem}
+        onClearCart={() => setCartItems([])}
+      />
+
+      {/* 6. 2D FLOOR PLAN RADAR MINIMAP */}
+      <Minimap
+        playerPosition={playerPosition}
+        hoveredProductId={null}
+        onSelectProduct={() => {}}
+      />
+
+      {/* 7. VIRTUAL TOUCH JOYSTICK FOR MOBILE WALKTHROUGH */}
+      <MobileControls
+        currentMode={currentMode}
+        onJoystickMove={onJoystickMove}
       />
 
       {/* 8. ARCHITECTURAL BLUEPRINT SPECIFICATIONS MODAL */}

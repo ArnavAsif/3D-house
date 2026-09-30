@@ -48,7 +48,7 @@ export default function ProductModal({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [_activeImageIndex, setActiveImageIndex] = useState(0);
   const [showFullSpecs, setShowFullSpecs] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [stockInfo, setStockInfo] = useState<{

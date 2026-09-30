@@ -973,3 +973,79 @@
   }
 }
 
+/* Minimal Luxury Architectural Door Interaction Prompt */
+.luxury-door-prompt-container {
+  position: fixed;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  pointer-events: auto;
+  animation: promptFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes promptFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.luxury-door-prompt-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(20, 21, 24, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 110, 0.35);
+  border-radius: 12px;
+  padding: 12px 32px;
+  color: #f7f4ed;
+  cursor: pointer;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.luxury-door-prompt-btn:hover {
+  background: rgba(28, 29, 34, 0.85);
+  border-color: rgba(212, 175, 110, 0.65);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35), 0 0 20px rgba(212, 175, 110, 0.15);
+  transform: translateY(-2px);
+}
+
+.door-prompt-action {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 5px;
+  color: #fff9f0;
+  text-transform: uppercase;
+}
+
+.door-prompt-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  color: rgba(212, 175, 110, 0.9);
+  text-transform: uppercase;
+}
+
+.door-prompt-key {
+  background: rgba(212, 175, 110, 0.15);
+  border: 1px solid rgba(212, 175, 110, 0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.64rem;
+}
+

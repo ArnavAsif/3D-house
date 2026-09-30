@@ -1,24 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { useState, Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import PerformanceManager from './PerformanceManager';
 import Environment from './Environment';
 import Lighting from './Lighting';
 import Architecture from './Architecture';
 import Furniture from './Furniture';
-import Products from './Products';
 import Player from './Player';
 import Camera from './Camera';
 import CollisionSystem from './CollisionSystem';
-import ProductInteraction from './ProductInteraction';
 import LoadingScreen from './LoadingScreen';
+import ProductInteraction from './ProductInteraction';
 import ShowroomOverlay from '@/components/ui/ShowroomOverlay';
-import { positioningService } from '@/lib/showroom/positioningService';
-import { showroomService } from '@/lib/showroom/showroomService';
-import { ProductVariant } from '@/types/product';
-import { ShowroomProductWithDetails } from '@/types/showroom';
-import * as THREE from 'three';
 
 /**
  * CanvasReadyNotifier
@@ -37,40 +31,37 @@ function CanvasReadyNotifier({ onReady }: { onReady: () => void }) {
 
 /**
  * Scene
- * Master React Three Fiber WebGL Showroom component.
- * Integrates modular components for Architecture, Furniture, Products,
- * Lighting, CollisionSystem, Camera, Player, and UI HUD.
+ * Master React Three Fiber WebGL Living Room Architectural Experience.
  *
- * Fully connected to Supabase:
- * Supabase -> showroom_products -> product_id -> products -> product_variants & product_images & inventory
+ * Sequence:
+ * 1. Player starts OUTSIDE facing the front entrance at [0.0, 1.65, 11.2].
+ * 2. Player approaches the interactive front door and presses [E] or clicks OPEN.
+ * 3. Front door smoothly swings open and collision updates.
+ * 4. Player walks inside into the grand, open-plan Living Room.
+ * 5. Player can walk freely around the spacious furniture arrangement.
+ * 6. Only Master Bedroom Suite and Spa Bathroom remain closed with COMING SOON plaques.
+ * 7. Single interactive product (product-01, Aura Modern Lounge Chair) with subtle highlight, click panel, and Add to Cart.
  */
 export default function Scene() {
   const [sceneReady, setSceneReady] = useState(false);
-  const [currentMode, setCurrentMode] = useState('DOLLHOUSE');
+  const [currentMode, setCurrentMode] = useState('FIRST_PERSON');
   const [isNight, setIsNight] = useState(false);
-  const [showCeiling, setShowCeiling] = useState(false);
-  const [activeProductId, setActiveProductId] = useState<string | null>(null);
-  const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
-  const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
-  const [playerPosition, setPlayerPosition] = useState({ x: 0, z: 7.8, yaw: 0, mode: 'DOLLHOUSE' });
-  const [teleportTarget, setTeleportTarget] = useState<{ x: number; z: number; yaw?: number } | null>(null);
+  const [showCeiling, setShowCeiling] = useState(true);
+  const [activeProduct, setActiveProduct] = useState<string | null>(null);
+  const [playerPosition, setPlayerPosition] = useState({
+    x: 0.0,
+    z: 11.2,
+    yaw: 0.0,
+    mode: 'FIRST_PERSON'
+  });
   const [joystickVector, setJoystickVector] = useState({ x: 0, y: 0 });
 
-  const [furnitureGroup, setFurnitureGroup] = useState<THREE.Group | null>(null);
-  const [showroomProducts, setShowroomProducts] = useState<ShowroomProductWithDetails[]>([]);
-
-  // 1. Fetch active showroom products from Supabase on showroom load
-  useEffect(() => {
-    showroomService.fetchShowroomProducts().then((items) => {
-      if (items && items.length > 0) {
-        setShowroomProducts(items);
-      }
-    });
-  }, []);
-
-  const handleRegisterInteractives = ({ group }: { group: THREE.Group }) => {
-    setFurnitureGroup(group);
-  };
+  // Accessible door interaction state
+  const [doorState, setDoorState] = useState<{ isNear: boolean; isOpen: boolean }>({
+    isNear: false,
+    isOpen: false
+  });
+  const toggleDoorRef = useRef<(() => void) | null>(null);
 
   const handleModeChange = (mode: string) => {
     setCurrentMode(mode);
@@ -79,26 +70,6 @@ export default function Scene() {
     } else {
       setShowCeiling(false);
     }
-  };
-
-  const handleTeleportRoom = (roomId: string) => {
-    const rooms = positioningService.getRooms();
-    const room = rooms.find((r) => r.id === roomId);
-    if (room && room.cameraWaypoint) {
-      setTeleportTarget({
-        x: room.cameraWaypoint.position[0],
-        z: room.cameraWaypoint.position[2],
-        yaw: 0
-      });
-      // Automatically switch to first person mode when teleporting to a specific room
-      if (currentMode !== 'FIRST_PERSON') {
-        handleModeChange('FIRST_PERSON');
-      }
-    }
-  };
-
-  const handleVariantChange = (productId: string, variant: ProductVariant) => {
-    setActiveVariant(variant);
   };
 
   return (
@@ -117,10 +88,10 @@ export default function Scene() {
             powerPreference: 'high-performance'
           }}
           camera={{
-            fov: 60,
+            fov: 65,
             near: 0.1,
             far: 100,
-            position: [0, 16, 20]
+            position: [0.0, 1.65, 11.2]
           }}
         >
           <Suspense fallback={null}>
@@ -136,67 +107,54 @@ export default function Scene() {
             {/* Dynamic Day/Night Lighting Engine */}
             <Lighting isNight={isNight} />
 
-            {/* Complete Structural Architectural Shell */}
-            <Architecture showCeiling={showCeiling} />
-
-            {/* Curated Luxury Furniture & Visual 3D Meshes tagged with Supabase product IDs */}
-            <Furniture
-              products={showroomProducts}
-              onRegisterInteractives={handleRegisterInteractives}
+            {/* Structural Shell with Landscaped Approach, Portico & Interactive Front Entrance Door */}
+            <Architecture
+              showCeiling={showCeiling}
+              onDoorProximity={setDoorState}
+              onToggleDoorRegister={(fn) => {
+                toggleDoorRef.current = fn;
+              }}
             />
 
-            {/* Decoupled Interactive Product Zones, GLTF loader & Navigation Pins */}
-            <Products
-              showroomProducts={showroomProducts}
-              activeProductId={activeProductId}
-              hoveredProductId={hoveredProductId}
-              onProductClick={(id) => setActiveProductId(id)}
-              activeVariant={activeVariant}
-              sceneFurnitureGroup={furnitureGroup}
+            {/* Curated Luxury Furniture in Open-Plan Living Room */}
+            <Furniture />
+
+            {/* Exactly ONE Interactive Product (product-01, Aura Modern Lounge Chair) */}
+            <ProductInteraction
+              onProductSelect={(id) => setActiveProduct(id)}
+              activeProduct={activeProduct}
             />
 
-            {/* First-Person Walking Controller */}
+            {/* First-Person Walking Controller starting OUTSIDE the House */}
             <Player
               currentMode={currentMode}
               joystickVector={joystickVector}
               onPositionUpdate={setPlayerPosition}
-              teleportTarget={teleportTarget}
             />
 
-            {/* Dual Mode Camera System */}
+            {/* First-Person Human Eye-Height Camera System */}
             <Camera currentMode={currentMode} />
 
             {/* Collision Resolution Engine */}
             <CollisionSystem />
-
-            {/* Raycasting Event Manager */}
-            <ProductInteraction
-              onProductHover={setHoveredProductId}
-              onProductSelect={(id) => setActiveProductId(id)}
-              activeProduct={activeProductId}
-            />
           </Suspense>
         </Canvas>
       </div>
 
       {/* 3. Luxury UI & HUD Overlay */}
       <ShowroomOverlay
-        showroomProducts={showroomProducts}
-        activeProductId={activeProductId}
-        hoveredProductId={hoveredProductId}
-        onCloseProduct={() => setActiveProductId(null)}
-        onSelectProduct={(id) => setActiveProductId(id)}
-        onHoverProduct={setHoveredProductId}
-        onVariantChange={handleVariantChange}
         currentMode={currentMode}
         onModeChange={handleModeChange}
         isNight={isNight}
         onToggleNight={() => setIsNight(!isNight)}
         showCeiling={showCeiling}
         onToggleCeiling={() => setShowCeiling(!showCeiling)}
-        onTeleportRoom={handleTeleportRoom}
         playerPosition={playerPosition}
         onJoystickMove={setJoystickVector}
+        doorState={doorState}
+        onToggleDoor={() => toggleDoorRef.current?.()}
+        activeProduct={activeProduct}
+        onCloseProduct={() => setActiveProduct(null)}
       />
     </div>
   );

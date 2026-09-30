@@ -1,29 +1,39 @@
 'use client';
 
 import * as THREE from 'three';
-import { COLLISION_OBSTACLES } from '@/data/roomData';
+import { COLLISION_OBSTACLES, WALK_LIMITS } from '@/data/roomData';
 import { CollisionObstacle } from '@/types/showroom';
 
 /**
  * CollisionSystem
- * Sliding collision resolution engine for Villa Lumina.
- * Ensures the user has fluid, realistic walking navigation through all rooms
- * without clipping through solid walls, kitchen islands, or built-in plinths.
+ * High-performance sliding collision resolution engine for Villa Lumina.
+ * Uses lightweight 2D AABB circle-box penetration resolution with tangent sliding.
+ * Prevents camera clipping and eliminates frame drops or jitter.
  */
 export class CollisionEngine {
-  public obstacles: CollisionObstacle[];
+  public obstacles: (CollisionObstacle & { active?: boolean })[];
   public playerRadius: number;
 
   constructor(obstacles: CollisionObstacle[] = COLLISION_OBSTACLES as unknown as CollisionObstacle[]) {
-    this.obstacles = obstacles;
-    this.playerRadius = 0.45; // 450mm body clearance
+    this.obstacles = obstacles.map((obs) => ({ ...obs, active: true }));
+    this.playerRadius = 0.35; // 350mm realistic human body clearance
+  }
+
+  /**
+   * Sets whether a specific obstacle (e.g. interactive front door) is active in collision checks.
+   */
+  setObstacleActive(id: string, active: boolean) {
+    const obs = this.obstacles.find((o) => o.id === id);
+    if (obs) {
+      obs.active = active;
+    }
   }
 
   /**
    * Resolves player movement with independent X and Z axis sliding collision checks.
    * @param currentPos - Current player position
    * @param targetPos - Intended next position
-   * @returns Corrected position allowing smooth wall sliding
+   * @returns Corrected position allowing smooth wall and furniture sliding
    */
   resolveMovement(currentPos: THREE.Vector3, targetPos: THREE.Vector3): THREE.Vector3 {
     const nextPos = currentPos.clone();
@@ -32,6 +42,7 @@ export class CollisionEngine {
     // 1. Test X-axis movement
     let collideX = false;
     for (const obs of this.obstacles) {
+      if (obs.active === false) continue;
       if (
         targetPos.x + r > obs.minX &&
         targetPos.x - r < obs.maxX &&
@@ -49,6 +60,7 @@ export class CollisionEngine {
     // 2. Test Z-axis movement
     let collideZ = false;
     for (const obs of this.obstacles) {
+      if (obs.active === false) continue;
       if (
         nextPos.x + r > obs.minX &&
         nextPos.x - r < obs.maxX &&
@@ -61,6 +73,12 @@ export class CollisionEngine {
     }
     if (!collideZ) {
       nextPos.z = targetPos.z;
+    }
+
+    // 3. Clamp within master walkable boundary limits
+    if (WALK_LIMITS) {
+      nextPos.x = Math.max(WALK_LIMITS.minX + r, Math.min(WALK_LIMITS.maxX - r, nextPos.x));
+      nextPos.z = Math.max(WALK_LIMITS.minZ + r, Math.min(WALK_LIMITS.maxZ - r, nextPos.z));
     }
 
     // Retain fixed eye-level camera height (1.65m standard standing perspective)

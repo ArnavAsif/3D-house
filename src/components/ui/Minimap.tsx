@@ -2,24 +2,23 @@
 
 import React, { useState } from 'react';
 import { Navigation, Maximize2, Minimize2 } from 'lucide-react';
-import { SHOWROOM_PRODUCTS } from '@/data/showroomProducts';
 
 interface MinimapProps {
   playerPosition: { x: number; z: number; yaw: number };
-  hoveredProductId: string | null;
-  onSelectProduct: (productId: string) => void;
+  hoveredProductId?: string | null;
+  onSelectProduct?: (productId: string) => void;
 }
 
 /**
  * Minimap
  * 2D Architectural SVG Floor Plan Radar HUD.
- * Tracks user real-time spatial positioning, viewing angle cone, and interactive product targets.
+ * Reflects the realistic open-plan Villa Lumina layout:
+ * - Exterior landscaped front approach & entrance pathway.
+ * - Grand continuous open-plan Living, Dining & Foyer hall.
+ * - Closed private wings: Master Bedroom Suite & Spa Bathroom (COMING SOON).
+ * - Real-time player coordinate positioning & viewing angle cone.
  */
-export default function Minimap({
-  playerPosition,
-  hoveredProductId,
-  onSelectProduct
-}: MinimapProps) {
+export default function Minimap({ playerPosition }: MinimapProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -27,7 +26,7 @@ export default function Minimap({
       <div className="minimap-header">
         <div className="minimap-title-row">
           <Navigation size={13} />
-          <span>Floor Plan Radar</span>
+          <span>Villa Floor Plan</span>
         </div>
         <button
           className="minimap-expand-btn"
@@ -40,66 +39,82 @@ export default function Minimap({
 
       {/* Scaled 2D Architectural SVG Floor Plan */}
       <div className="minimap-canvas-wrapper">
-        <svg viewBox="-12 -16 24 26" className="minimap-svg">
-          {/* Background Villa Bounds */}
+        <svg viewBox="-14 -9 28 24" className="minimap-svg">
+          {/* Villa Main Floor Slab */}
           <rect x="-10" y="-8" width="20" height="14.5" className="map-house-floor" />
-          <rect x="-11" y="-15.5" width="22" height="7.5" className="map-garden-ground" />
-          <rect x="-3.5" y="6.5" width="7" height="2.5" className="map-porch-ground" />
 
-          {/* Room Zones */}
-          <rect x="-9.5" y="-1.5" width="8" height="8" className="map-room-zone" />
-          <text x="-5.5" y="2.5" className="map-room-label">Living Room</text>
+          {/* Exterior Front Approach & Pathway */}
+          <rect
+            x="-2.0"
+            y="6.5"
+            width="4.0"
+            height="7.0"
+            fill="rgba(212, 175, 110, 0.2)"
+            stroke="rgba(212, 175, 110, 0.5)"
+            strokeWidth="0.1"
+          />
+          <text x="0" y="10.5" className="map-room-label" style={{ fontSize: '0.65px', fill: '#d4af6e' }}>
+            Main Entrance
+          </text>
 
-          <rect x="1.5" y="1.5" width="8" height="5" className="map-room-zone" />
-          <text x="5.5" y="4.2" className="map-room-label">Dining Area</text>
+          {/* Open-Plan Continuous Living Space */}
+          <rect
+            x="-9.6"
+            y="-1.5"
+            width="17.6"
+            height="7.8"
+            fill="rgba(212, 175, 110, 0.08)"
+            stroke="rgba(212, 175, 110, 0.5)"
+            strokeWidth="0.12"
+          />
+          <text x="-5.5" y="2.2" className="map-room-label" style={{ fontWeight: '700', fill: '#f6f3ed' }}>
+            Living Room
+          </text>
+          <text x="4.5" y="2.2" className="map-room-label" style={{ fontWeight: '600', fill: '#e6ded2', opacity: 0.8 }}>
+            Dining & Kitchen
+          </text>
+          <text x="-0.5" y="3.2" className="map-room-label" style={{ fontSize: '0.6px', fill: '#4ade80' }}>
+            ● OPEN LIVING AREA
+          </text>
 
-          <rect x="1.5" y="-7.5" width="8" height="8" className="map-room-zone" />
-          <text x="5.5" y="-3.5" className="map-room-label">Kitchen</text>
+          {/* Closed Inaccessible Wings (Coming Soon) */}
+          {/* 1. Master Bedroom Suite */}
+          <rect x="-9.6" y="-7.6" width="7.6" height="6.1" className="map-room-zone" fill="rgba(0,0,0,0.4)" />
+          <text x="-5.8" y="-4.6" className="map-room-label" style={{ opacity: 0.6 }}>Bedroom Suite</text>
+          <text x="-5.8" y="-3.7" className="map-room-label" style={{ fontSize: '0.55px', fill: '#d4af6e', opacity: 0.85 }}>
+            COMING SOON
+          </text>
 
-          <rect x="-9.5" y="-7.5" width="7.5" height="6" className="map-room-zone" />
-          <text x="-5.7" y="-4.2" className="map-room-label">Showroom Suite</text>
-
-          <rect x="-2.0" y="-7.5" width="3.5" height="4.5" className="map-room-zone" />
-          <text x="-0.2" y="-5.2" className="map-room-label">Bath</text>
-
-          <text x="0" y="4.2" className="map-room-label foyer-label">Foyer</text>
-          <text x="0" y="-11.0" className="map-room-label garden-label">Rear Garden</text>
+          {/* 2. Spa Bathroom */}
+          <rect x="-2.0" y="-7.6" width="3.5" height="4.6" className="map-room-zone" fill="rgba(0,0,0,0.4)" />
+          <text x="-0.25" y="-5.5" className="map-room-label" style={{ opacity: 0.6 }}>Bathroom</text>
+          <text x="-0.25" y="-4.6" className="map-room-label" style={{ fontSize: '0.5px', fill: '#d4af6e', opacity: 0.85 }}>
+            COMING SOON
+          </text>
 
           {/* Exterior Walls */}
-          <line x1="-10" y1="6.5" x2="-1.8" y2="6.5" className="map-wall-solid" />
-          <line x1="1.8" y1="6.5" x2="10" y2="6.5" className="map-wall-solid" />
-          <line x1="-1.8" y1="6.5" x2="1.8" y2="6.5" className="map-door-entrance" />
+          {/* South Facade with Main Entrance Door */}
+          <line x1="-10" y1="6.5" x2="-0.9" y2="6.5" className="map-wall-solid" />
+          <line x1="0.9" y1="6.5" x2="10" y2="6.5" className="map-wall-solid" />
+          {/* Main Entrance Doorway Gap */}
+          <line x1="-0.9" y1="6.5" x2="0.9" y2="6.5" stroke="#4ade80" strokeWidth="0.25" />
 
-          <line x1="-10" y1="-8" x2="-2.0" y2="-8" className="map-wall-glass" />
-          <line x1="-2.0" y1="-8" x2="1.5" y2="-8" className="map-wall-solid" />
-          <line x1="1.5" y1="-8" x2="6.0" y2="-8" className="map-wall-glass" />
-          <line x1="6.0" y1="-8" x2="10" y2="-8" className="map-wall-solid" />
+          {/* West & North & East Exterior Walls */}
+          <line x1="-9.84" y1="-7.8" x2="-9.84" y2="6.5" className="map-wall-glass" />
+          <line x1="-10" y1="-7.8" x2="10" y2="-7.8" className="map-wall-solid" />
+          <line x1="9.84" y1="-7.8" x2="9.84" y2="6.5" className="map-wall-solid" />
 
-          <line x1="-10" y1="-8" x2="-10" y2="6.5" className="map-wall-glass" />
-          <line x1="10" y1="-8" x2="10" y2="6.5" className="map-wall-solid" />
+          {/* Closed Bedroom Partition Wall & Door at Z = -1.5 */}
+          <line x1="-9.84" y1="-1.5" x2="-4.5" y2="-1.5" className="map-wall-interior" strokeWidth="0.2" />
+          <line x1="-4.5" y1="-1.5" x2="-3.0" y2="-1.5" stroke="#d4af6e" strokeWidth="0.18" />
+          <line x1="-3.0" y1="-1.5" x2="-2.0" y2="-1.5" className="map-wall-interior" strokeWidth="0.2" />
 
-          {/* Interior Partitions */}
-          <line x1="-2.0" y1="-7.5" x2="-2.0" y2="-3.0" className="map-wall-interior" />
-          <line x1="1.5" y1="-7.5" x2="1.5" y2="-3.0" className="map-wall-interior" />
-          <line x1="-2.0" y1="-3.0" x2="-0.6" y2="-3.0" className="map-wall-interior" />
-          <line x1="0.6" y1="-3.0" x2="1.5" y2="-3.0" className="map-wall-interior" />
-
-          <line x1="-9.5" y1="-1.5" x2="-4.5" y2="-1.5" className="map-wall-interior" />
-          <line x1="-3.0" y1="-1.5" x2="-2.0" y2="-1.5" className="map-wall-interior" />
-
-          {/* Product Hotspots on Minimap */}
-          {SHOWROOM_PRODUCTS.map((prod) => (
-            <circle
-              key={prod.id}
-              cx={prod.position[0]}
-              cy={prod.position[2]}
-              r={hoveredProductId === prod.id ? '0.7' : '0.45'}
-              className={`map-product-dot ${hoveredProductId === prod.id ? 'active' : ''}`}
-              onClick={() => onSelectProduct(prod.id)}
-            >
-              <title>{prod.name}</title>
-            </circle>
-          ))}
+          {/* Closed Bathroom Partition Wall & Door at Z = -3.0 */}
+          <line x1="-2.0" y1="-1.5" x2="-2.0" y2="-7.6" className="map-wall-interior" strokeWidth="0.2" />
+          <line x1="-2.0" y1="-3.0" x2="-0.5" y2="-3.0" className="map-wall-interior" strokeWidth="0.2" />
+          <line x1="-0.5" y1="-3.0" x2="0.5" y2="-3.0" stroke="#d4af6e" strokeWidth="0.18" />
+          <line x1="0.5" y1="-3.0" x2="1.5" y2="-3.0" className="map-wall-interior" strokeWidth="0.2" />
+          <line x1="1.5" y1="-3.0" x2="1.5" y2="-7.6" className="map-wall-interior" strokeWidth="0.2" />
 
           {/* Real-time Player Position & View Angle Cone */}
           {playerPosition && (

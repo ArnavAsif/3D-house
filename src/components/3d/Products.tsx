@@ -28,35 +28,31 @@ export function GLTFProductLoader({
   scale = [1, 1, 1],
   productId
 }: GLTFProductLoaderProps) {
-  try {
-    const { scene } = useLoader(GLTFLoader, url, (loader) => {
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath('/draco/');
-  loader.setDRACOLoader(dracoLoader);
-});
-    const cloned = scene.clone();
-
-    cloned.traverse((node) => {
+  const gltf = useGLTF(url);
+  const cloned = useMemo(() => {
+    if (!gltf || !gltf.scene) return null;
+    const s = gltf.scene.clone();
+    s.traverse((node) => {
       if ((node as THREE.Mesh).isMesh) {
         node.castShadow = true;
         node.receiveShadow = true;
         node.userData.productId = productId;
       }
     });
+    return s;
+  }, [gltf, productId]);
 
-    return (
-      <primitive
-        object={cloned}
-        position={position}
-        rotation={rotation}
-        scale={scale}
-        userData={{ productId }}
-      />
-    );
-  } catch (err) {
-    // Graceful fallback if GLTF file isn't physically available on disk/network yet
-    return null;
-  }
+  if (!cloned) return null;
+
+  return (
+    <primitive
+      object={cloned}
+      position={position}
+      rotation={rotation}
+      scale={scale}
+      userData={{ productId }}
+    />
+  );
 }
 
 /**

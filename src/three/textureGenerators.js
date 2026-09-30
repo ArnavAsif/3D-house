@@ -449,3 +449,119 @@ export function createAbstractArtTexture2() {
   return texture;
 }
 
+export function createDoorPlaqueTexture(roomName = 'PRIVATE SUITE', statusText = 'COMING SOON') {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  // Background: Deep architectural matte bronze/charcoal with subtle metallic gradient
+  const bgGrad = ctx.createLinearGradient(0, 0, 1024, 512);
+  bgGrad.addColorStop(0, '#1c1d20');
+  bgGrad.addColorStop(0.5, '#25262a');
+  bgGrad.addColorStop(1, '#18191b');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 1024, 512);
+
+  // Subtle brushed metal streaks
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
+  for (let i = 0; i < 400; i++) {
+    const y = Math.random() * 512;
+    const h = 1 + Math.random() * 2;
+    ctx.fillRect(0, y, 1024, h);
+  }
+
+  // Refined double border in champagne gold / brass
+  ctx.strokeStyle = 'rgba(212, 175, 110, 0.65)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(36, 36, 952, 440);
+
+  ctx.strokeStyle = 'rgba(212, 175, 110, 0.25)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(48, 48, 928, 416);
+
+  // Corner accent notches
+  ctx.fillStyle = '#d4af6e';
+  const cornerSize = 12;
+  ctx.fillRect(36, 36, cornerSize, 3);
+  ctx.fillRect(36, 36, 3, cornerSize);
+  ctx.fillRect(988 - cornerSize, 36, cornerSize, 3);
+  ctx.fillRect(985, 36, 3, cornerSize);
+  ctx.fillRect(36, 473, cornerSize, 3);
+  ctx.fillRect(36, 476 - cornerSize, 3, cornerSize);
+  ctx.fillRect(988 - cornerSize, 473, cornerSize, 3);
+  ctx.fillRect(985, 476 - cornerSize, 3, cornerSize);
+
+  // Top Category Tag
+  ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = 'rgba(212, 175, 110, 0.8)';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '10px';
+  ctx.fillText('VILLA LUMINA  •  SHOWROOM', 512, 120);
+
+  // Room Title
+  ctx.font = '600 48px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = '#f8f5ee';
+  ctx.letterSpacing = '6px';
+  ctx.fillText(roomName.toUpperCase(), 512, 215);
+
+  // Decorative Hairline Divider
+  const divGrad = ctx.createLinearGradient(260, 260, 764, 260);
+  divGrad.addColorStop(0, 'rgba(212, 175, 110, 0)');
+  divGrad.addColorStop(0.5, 'rgba(212, 175, 110, 0.7)');
+  divGrad.addColorStop(1, 'rgba(212, 175, 110, 0)');
+  ctx.strokeStyle = divGrad;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(260, 260);
+  ctx.lineTo(764, 260);
+  ctx.stroke();
+
+  // Status Badge: COMING SOON
+  ctx.font = '700 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = '#e8c88c';
+  ctx.letterSpacing = '8px';
+  ctx.fillText(statusText.toUpperCase(), 512, 335);
+
+  // Subtitle / Lock note
+  ctx.font = '400 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = 'rgba(220, 215, 205, 0.6)';
+  ctx.letterSpacing = '5px';
+  ctx.fillText('GALLERY ACCESS RESTRICTED', 512, 400);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+export function createCurtainTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  // Sheer warm cream base
+  ctx.fillStyle = '#f7f4ed';
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Vertical wave shading simulation for drapery folds
+  for (let x = 0; x < 512; x++) {
+    const wave = Math.sin((x / 512) * Math.PI * 12);
+    const shadow = 0.08 + 0.06 * wave;
+    ctx.fillStyle = `rgba(180, 168, 150, ${shadow})`;
+    ctx.fillRect(x, 0, 1, 512);
+  }
+
+  // Delicate linen cross-weave
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+  for (let y = 0; y < 512; y += 4) {
+    ctx.fillRect(0, y, 512, 1);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
