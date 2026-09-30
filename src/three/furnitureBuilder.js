@@ -4,111 +4,213 @@ import {
   createTravertineTexture,
   createMarbleTexture,
   createRugTexture,
-  createFabricNormalTexture
+  createFabricNormalTexture,
+  createAbstractArtTexture,
+  createAbstractArtTexture2
 } from './textureGenerators';
 
 export function buildFurnitureAndProducts(scene, productsCatalog) {
   const furnitureGroup = new THREE.Group();
-  furnitureGroup.name = 'FurnitureAndProducts';
+  furnitureGroup.name = 'LuxuryContemporaryInterior';
 
   const interactiveMeshes = [];
   const hotspots = [];
 
-  // Textures
+  // =========================================================================
+  // 1. TEXTURES & EDITORIAL LUXURY MATERIALS
+  // =========================================================================
   const woodTex = createWoodTexture(false);
+  woodTex.repeat.set(2, 2);
+
   const darkWoodTex = createWoodTexture(true);
+  darkWoodTex.repeat.set(2, 2);
+
   const travertineTex = createTravertineTexture();
+  travertineTex.repeat.set(2, 2);
+
   const marbleTex = createMarbleTexture();
+  marbleTex.repeat.set(3, 2);
+
   const rugTex = createRugTexture();
   rugTex.repeat.set(2, 2);
+
   const fabricNormal = createFabricNormalTexture();
   fabricNormal.repeat.set(8, 8);
 
-  // Reusable Materials
+  const artTex1 = createAbstractArtTexture();
+  const artTex2 = createAbstractArtTexture2();
+
   const materials = {
+    // Upholstery Fabrics
     creamBoucle: new THREE.MeshStandardMaterial({
-      color: 0xf0ece1,
-      roughness: 0.85,
-      metalness: 0.05,
+      color: 0xf2eee5,
+      roughness: 0.88,
+      metalness: 0.02,
       bumpMap: fabricNormal,
-      bumpScale: 0.02,
-      name: 'CreamBoucle'
+      bumpScale: 0.025,
+      name: 'TexturedCreamBoucle'
     }),
-    saddleLeather: new THREE.MeshStandardMaterial({
-      color: 0x94532b,
-      roughness: 0.45,
-      metalness: 0.1,
-      name: 'SaddleLeather'
+    oatLinen: new THREE.MeshStandardMaterial({
+      color: 0xd8cebc,
+      roughness: 0.82,
+      metalness: 0.02,
+      bumpMap: fabricNormal,
+      bumpScale: 0.018,
+      name: 'OatLinenFabric'
     }),
-    darkWalnut: new THREE.MeshStandardMaterial({
-      map: darkWoodTex,
-      roughness: 0.35,
+    cognacLeather: new THREE.MeshStandardMaterial({
+      color: 0x93552e,
+      roughness: 0.42,
+      metalness: 0.08,
+      name: 'CognacSaddleLeather'
+    }),
+    charcoalVelvet: new THREE.MeshStandardMaterial({
+      color: 0x2e2f32,
+      roughness: 0.7,
       metalness: 0.05,
-      name: 'DarkWalnut'
+      name: 'CharcoalVelvet'
     }),
+    throwBlanket: new THREE.MeshStandardMaterial({
+      color: 0xb5a593,
+      roughness: 0.95,
+      metalness: 0.0,
+      bumpMap: fabricNormal,
+      bumpScale: 0.03,
+      name: 'CashmereThrow'
+    }),
+
+    // Woods
     naturalOak: new THREE.MeshStandardMaterial({
       map: woodTex,
-      roughness: 0.4,
-      metalness: 0.05,
-      name: 'NaturalOak'
+      roughness: 0.38,
+      metalness: 0.04,
+      name: 'WarmNaturalOak'
     }),
+    smokedWalnut: new THREE.MeshStandardMaterial({
+      map: darkWoodTex,
+      roughness: 0.35,
+      metalness: 0.04,
+      name: 'SmokedWalnut'
+    }),
+
+    // Stones & Marbles
     travertine: new THREE.MeshStandardMaterial({
       map: travertineTex,
-      roughness: 0.35,
-      metalness: 0.05,
-      name: 'Travertine'
+      roughness: 0.32,
+      metalness: 0.04,
+      name: 'HonedRomanTravertine'
     }),
     calacatta: new THREE.MeshStandardMaterial({
       map: marbleTex,
-      roughness: 0.2,
-      metalness: 0.08,
-      name: 'CalacattaMarble'
+      roughness: 0.18,
+      metalness: 0.06,
+      name: 'CalacattaGoldMarble'
     }),
+
+    // Metals
     matteBlackMetal: new THREE.MeshStandardMaterial({
-      color: 0x222326,
-      roughness: 0.35,
-      metalness: 0.8,
+      color: 0x1e1f22,
+      roughness: 0.32,
+      metalness: 0.85,
       name: 'MatteBlackMetal'
     }),
     brushedBrass: new THREE.MeshStandardMaterial({
       color: 0xc8a462,
+      roughness: 0.24,
+      metalness: 0.92,
+      name: 'BrushedChampagneBrass'
+    }),
+    subtleBronze: new THREE.MeshStandardMaterial({
+      color: 0x6e5743,
       roughness: 0.28,
-      metalness: 0.85,
-      name: 'BrushedBrass'
-    }),
-    livingRug: new THREE.MeshStandardMaterial({
-      map: rugTex,
-      roughness: 0.95,
-      metalness: 0.0,
-      name: 'LivingRug'
-    }),
-    darkCharcoalCabinet: new THREE.MeshStandardMaterial({
-      color: 0x2c2d30,
-      roughness: 0.4,
-      metalness: 0.1,
-      name: 'CharcoalCabinet'
+      metalness: 0.88,
+      name: 'SubtleArchitecturalBronze'
     }),
     stainlessSteel: new THREE.MeshStandardMaterial({
-      color: 0xd4d8dc,
-      roughness: 0.25,
-      metalness: 0.9,
-      name: 'StainlessSteel'
+      color: 0xd2d6dc,
+      roughness: 0.22,
+      metalness: 0.92,
+      name: 'BrushedStainlessSteel'
     }),
-    tvScreen: new THREE.MeshStandardMaterial({
-      color: 0x050505,
+
+    // Millwork & Cabinetry
+    darkCharcoalCabinet: new THREE.MeshStandardMaterial({
+      color: 0x242528,
+      roughness: 0.42,
+      metalness: 0.08,
+      name: 'MatteCharcoalMillwork'
+    }),
+
+    // Art, Ceramics & Decorative Objects
+    artCanvas1: new THREE.MeshStandardMaterial({
+      map: artTex1,
+      roughness: 0.85,
+      metalness: 0.0,
+      name: 'MinimalistArtCanvas1'
+    }),
+    artCanvas2: new THREE.MeshStandardMaterial({
+      map: artTex2,
+      roughness: 0.85,
+      metalness: 0.0,
+      name: 'MinimalistArtCanvas2'
+    }),
+    matteCeramicWhite: new THREE.MeshStandardMaterial({
+      color: 0xf5f3ee,
+      roughness: 0.65,
+      metalness: 0.02,
+      name: 'ArtisanalWhiteCeramic'
+    }),
+    matteCeramicTerracotta: new THREE.MeshStandardMaterial({
+      color: 0xb46b4c,
+      roughness: 0.72,
+      metalness: 0.02,
+      name: 'TerracottaCeramic'
+    }),
+    amberGlass: new THREE.MeshPhysicalMaterial({
+      color: 0xc8924b,
+      transmission: 0.85,
       roughness: 0.1,
-      metalness: 0.9,
-      name: 'TVScreen'
+      ior: 1.5,
+      transparent: true,
+      opacity: 0.75,
+      name: 'AmberBlownGlass'
+    }),
+    smokedGlass: new THREE.MeshPhysicalMaterial({
+      color: 0x484b50,
+      transmission: 0.88,
+      roughness: 0.12,
+      ior: 1.5,
+      transparent: true,
+      opacity: 0.8,
+      name: 'SmokedGlass'
+    }),
+
+    // Rugs & Linens
+    livingRug: new THREE.MeshStandardMaterial({
+      map: rugTex,
+      roughness: 0.96,
+      metalness: 0.0,
+      name: 'CustomBerberWoolRug'
     }),
     bedLinen: new THREE.MeshStandardMaterial({
-      color: 0xf4f1ea,
+      color: 0xf5f2eb,
       roughness: 0.9,
       metalness: 0.0,
-      name: 'BedLinen'
+      bumpMap: fabricNormal,
+      bumpScale: 0.02,
+      name: 'CrispBelgianLinen'
     }),
-    mirrorGlow: new THREE.MeshBasicMaterial({
-      color: 0xffedd0,
-      name: 'MirrorGlow'
+
+    // Lighting & Electronics
+    tvScreen: new THREE.MeshStandardMaterial({
+      color: 0x060608,
+      roughness: 0.08,
+      metalness: 0.95,
+      name: 'OLEDGlassScreen'
+    }),
+    luminaireGlow: new THREE.MeshBasicMaterial({
+      color: 0xffeed5,
+      name: 'WarmDiffusedLuminaireGlow'
     }),
     hotspotRing: new THREE.MeshBasicMaterial({
       color: 0xd4af37,
@@ -130,7 +232,6 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
     return mesh;
   };
 
-  // Helper to tag meshes as interactive and register for raycasting
   const tagInteractive = (meshOrGroup, productId) => {
     meshOrGroup.traverse((child) => {
       if (child.isMesh) {
@@ -144,24 +245,20 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
     });
   };
 
-  // Helper to create 3D floating hotspot pins
   const createHotspot = (product) => {
     const group = new THREE.Group();
     group.name = `Hotspot_${product.id}`;
 
-    // Outer pulsing ring
     const ringGeo = new THREE.RingGeometry(0.12, 0.18, 32);
     const ringMesh = new THREE.Mesh(ringGeo, materials.hotspotRing.clone());
     ringMesh.rotation.x = -Math.PI / 2;
     group.add(ringMesh);
 
-    // Inner glowing sphere core
     const coreGeo = new THREE.SphereGeometry(0.06, 16, 16);
     const coreMesh = new THREE.Mesh(coreGeo, materials.hotspotCore);
     group.add(coreMesh);
 
-    // Vertical pin stalk
-    const pinGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.25, 8);
+    const pinGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.24, 8);
     const pinMesh = new THREE.Mesh(pinGeo, materials.brushedBrass);
     pinMesh.position.y = -0.12;
     group.add(pinMesh);
@@ -182,214 +279,297 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
     furnitureGroup.add(group);
   };
 
-  // ==========================================
-  // 1. LIVING ROOM FURNITURE
-  // ==========================================
+  // =========================================================================
+  // 1. OPEN-PLAN LIVING ROOM (Editorial Modern Luxury Lounge)
+  // =========================================================================
   const livingGroup = new THREE.Group();
   livingGroup.name = 'LivingRoomZone';
 
-  // Woven Area Rug (X: -5.6, Z: 2.4, W: 5.5m, D: 4.5m)
-  const livingRug = createBox(5.6, 0.015, 4.4, materials.livingRug, [-5.6, 0.01, 2.4], false, true);
+  // A. Custom Hand-Knotted Berber Wool Area Rug (W: 6.0m, D: 4.8m)
+  // Position: [-5.6, 0.01, 2.5]
+  const livingRug = createBox(6.0, 0.018, 4.8, materials.livingRug, [-5.6, 0.009, 2.5], false, true);
   livingGroup.add(livingRug);
 
-  // A. Modular Sectional Sofa ('modular-sectional-sofa')
+  // B. Large Low-Profile Modular Sectional Sofa ('modular-sectional-sofa')
+  // Centered at X = -6.2, Z = 3.4. Leaves generous 1.8m+ walking paths on all sides.
   const sofaGroup = new THREE.Group();
   sofaGroup.name = 'Product_SectionalSofa';
-  // Main back section (length: 3.4m, depth: 1.0m)
-  const sofaBase1 = createBox(3.4, 0.24, 1.0, materials.creamBoucle, [-6.2, 0.16, 3.6]);
-  const sofaBack1 = createBox(3.4, 0.48, 0.28, materials.creamBoucle, [-6.2, 0.52, 4.0]);
-  // Cushions
-  const cushion1 = createBox(1.1, 0.16, 0.72, materials.creamBoucle, [-7.3, 0.36, 3.5]);
-  const cushion2 = createBox(1.1, 0.16, 0.72, materials.creamBoucle, [-6.2, 0.36, 3.5]);
-  const cushion3 = createBox(1.1, 0.16, 0.72, materials.creamBoucle, [-5.1, 0.36, 3.5]);
-  // L-Extension / Chaise section (left side: depth 2.2m)
-  const sofaBase2 = createBox(1.1, 0.24, 1.5, materials.creamBoucle, [-7.35, 0.16, 2.3]);
-  const sofaArmLeft = createBox(0.26, 0.42, 2.2, materials.creamBoucle, [-7.85, 0.44, 2.6]);
-  const chaiseCushion = createBox(0.85, 0.16, 1.45, materials.creamBoucle, [-7.35, 0.36, 2.3]);
 
-  sofaGroup.add(sofaBase1, sofaBack1, cushion1, cushion2, cushion3, sofaBase2, sofaArmLeft, chaiseCushion);
+  // Architectural recessed oak shadow plinth base (H = 60mm)
+  const sofaPlinth1 = createBox(3.4, 0.06, 1.0, materials.naturalOak, [-6.2, 0.03, 3.6]);
+  const sofaPlinth2 = createBox(1.1, 0.06, 1.4, materials.naturalOak, [-7.35, 0.03, 2.4]);
+
+  // Main seating base bench (H = 220mm, upholstered in cream boucle)
+  const sofaBaseMain = createBox(3.4, 0.22, 1.0, materials.creamBoucle, [-6.2, 0.17, 3.6]);
+  const sofaBaseChaise = createBox(1.1, 0.22, 1.4, materials.creamBoucle, [-7.35, 0.17, 2.4]);
+
+  // Plush seat cushions with soft piping (H = 140mm)
+  const seatCushion1 = createBox(1.1, 0.14, 0.76, materials.creamBoucle, [-5.1, 0.35, 3.5]);
+  const seatCushion2 = createBox(1.1, 0.14, 0.76, materials.creamBoucle, [-6.2, 0.35, 3.5]);
+  const seatCushion3 = createBox(1.1, 0.14, 0.76, materials.creamBoucle, [-7.3, 0.35, 3.5]);
+  const chaiseCushion = createBox(0.88, 0.14, 1.36, materials.creamBoucle, [-7.35, 0.35, 2.38]);
+
+  // Low architectural backrest (H = 460mm, D = 260mm)
+  const sofaBack = createBox(3.4, 0.46, 0.26, materials.creamBoucle, [-6.2, 0.51, 4.0]);
+  const sofaArm = createBox(0.24, 0.42, 2.2, materials.creamBoucle, [-7.83, 0.43, 2.6]);
+
+  // Curated scatter cushions (Cognac leather, Oat linen, Boucle)
+  const pillow1 = createBox(0.48, 0.36, 0.14, materials.cognacLeather, [-5.3, 0.52, 3.82]);
+  pillow1.rotation.y = 0.15;
+  const pillow2 = createBox(0.44, 0.34, 0.12, materials.oatLinen, [-6.4, 0.52, 3.82]);
+  pillow2.rotation.y = -0.1;
+  const pillow3 = createBox(0.46, 0.34, 0.12, materials.cognacLeather, [-7.65, 0.52, 3.4]);
+  pillow3.rotation.y = Math.PI / 4;
+
+  // Draped folded cashmere throw blanket on chaise
+  const throwDrape = createBox(0.65, 0.04, 0.95, materials.throwBlanket, [-7.35, 0.43, 1.85]);
+
+  sofaGroup.add(
+    sofaPlinth1, sofaPlinth2, sofaBaseMain, sofaBaseChaise,
+    seatCushion1, seatCushion2, seatCushion3, chaiseCushion,
+    sofaBack, sofaArm, pillow1, pillow2, pillow3, throwDrape
+  );
   tagInteractive(sofaGroup, 'modular-sectional-sofa');
   livingGroup.add(sofaGroup);
 
-  // B. Modern Accent Lounge Chair ('modern-lounge-chair')
-  // Positioned facing sofa conversation area (Pos: [-3.2, 0.0, 1.4], rotated)
-  const chairGroup = new THREE.Group();
-  chairGroup.name = 'Product_ModernLoungeChair';
-  chairGroup.position.set(-3.2, 0.0, 1.4);
-  chairGroup.rotation.y = -Math.PI * 0.75; // angled towards coffee table
-  // Chair Seat
-  const chairSeat = createBox(0.85, 0.18, 0.8, materials.creamBoucle, [0, 0.38, 0]);
-  // Curved/angled backrest
-  const chairBack = createBox(0.85, 0.52, 0.22, materials.creamBoucle, [0, 0.65, -0.32]);
-  // Armrests
-  const armL = createBox(0.16, 0.34, 0.78, materials.creamBoucle, [-0.44, 0.54, 0]);
-  const armR = createBox(0.16, 0.34, 0.78, materials.creamBoucle, [0.44, 0.54, 0]);
-  // Sleek smoked wood / brass legs
-  const legMat = materials.darkWalnut;
-  const legPositions = [[-0.38, 0.14, -0.32], [0.38, 0.14, -0.32], [-0.38, 0.14, 0.32], [0.38, 0.14, 0.32]];
-  legPositions.forEach((lp) => {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.018, 0.28, 8), legMat);
-    leg.position.set(lp[0], lp[1], lp[2]);
-    leg.rotation.x = lp[2] > 0 ? 0.12 : -0.12;
-    leg.rotation.z = lp[0] > 0 ? -0.12 : 0.12;
+  // C. Modern Sculptural Lounge Chairs ('modern-lounge-chair')
+  // Chair 1: Angled towards the coffee table (Pos: [-3.2, 0.0, 1.4], Rot: -135 deg)
+  const chairGroup1 = new THREE.Group();
+  chairGroup1.name = 'Product_ModernLoungeChair1';
+  chairGroup1.position.set(-3.2, 0.0, 1.4);
+  chairGroup1.rotation.y = -Math.PI * 0.72;
+
+  // Sculptural curved seat & wrap-around backrest
+  const c1Seat = createBox(0.84, 0.18, 0.8, materials.creamBoucle, [0, 0.36, 0]);
+  const c1Back = createBox(0.84, 0.52, 0.22, materials.creamBoucle, [0, 0.64, -0.32]);
+  const c1ArmL = createBox(0.15, 0.32, 0.76, materials.creamBoucle, [-0.43, 0.53, 0]);
+  const c1ArmR = createBox(0.15, 0.32, 0.76, materials.creamBoucle, [0.43, 0.53, 0]);
+  const c1Lumbar = createBox(0.48, 0.24, 0.1, materials.oatLinen, [0, 0.52, -0.22]);
+
+  // Tapered smoked walnut legs with brushed brass caps
+  const legPositions = [[-0.36, -0.32], [0.36, -0.32], [-0.36, 0.32], [0.36, 0.32]];
+  legPositions.forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.016, 0.26, 8), materials.smokedWalnut);
+    leg.position.set(lx, 0.13, lz);
+    leg.rotation.x = lz > 0 ? 0.1 : -0.1;
+    leg.rotation.z = lx > 0 ? -0.1 : 0.1;
     leg.castShadow = true;
-    chairGroup.add(leg);
+    chairGroup1.add(leg);
+
+    // Brass ferrule tip
+    const ferrule = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.016, 0.04, 8), materials.brushedBrass);
+    ferrule.position.set(lx, 0.02, lz);
+    chairGroup1.add(ferrule);
   });
-  chairGroup.add(chairSeat, chairBack, armL, armR);
-  tagInteractive(chairGroup, 'modern-lounge-chair');
-  livingGroup.add(chairGroup);
+  chairGroup1.add(c1Seat, c1Back, c1ArmL, c1ArmR, c1Lumbar);
+  tagInteractive(chairGroup1, 'modern-lounge-chair');
+  livingGroup.add(chairGroup1);
 
-  // Second Accent Chair for conversational symmetry
-  const chair2 = chairGroup.clone();
-  chair2.position.set(-3.5, 0.0, 3.2);
-  chair2.rotation.y = -Math.PI * 0.45;
-  tagInteractive(chair2, 'modern-lounge-chair');
-  livingGroup.add(chair2);
+  // Chair 2: Second sculptural companion chair angled symmetrically
+  const chairGroup2 = chairGroup1.clone();
+  chairGroup2.position.set(-3.5, 0.0, 3.2);
+  chairGroup2.rotation.y = -Math.PI * 0.42;
+  tagInteractive(chairGroup2, 'modern-lounge-chair');
+  livingGroup.add(chairGroup2);
 
-  // C. Aura Travertine Coffee Tables ('travertine-coffee-table')
-  const tableGroup = new THREE.Group();
-  tableGroup.name = 'Product_TravertineCoffeeTables';
-  // Large Table: Low pill shape (1.2m x 0.7m, H = 0.32m)
-  const largeTableTop = createBox(1.2, 0.08, 0.7, materials.travertine, [-5.2, 0.3, 2.4]);
-  const tableLeg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.26, 16), materials.travertine);
-  tableLeg1.position.set(-5.6, 0.13, 2.4);
-  tableLeg1.castShadow = true;
-  const tableLeg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.26, 16), materials.travertine);
-  tableLeg2.position.set(-4.8, 0.13, 2.4);
-  tableLeg2.castShadow = true;
+  // D. Koto Dual Travertine Coffee Tables ('travertine-coffee-table')
+  const coffeeTableGroup = new THREE.Group();
+  coffeeTableGroup.name = 'Product_TravertineCoffeeTables';
 
-  // Smaller Nesting Table: Round travertine (D = 0.55m, H = 0.40m)
-  const smallTableTop = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.06, 32), materials.travertine);
-  smallTableTop.position.set(-4.2, 0.38, 2.8);
-  smallTableTop.castShadow = true;
-  const smallTableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.35, 16), materials.travertine);
-  smallTableLeg.position.set(-4.2, 0.18, 2.8);
-  smallTableLeg.castShadow = true;
+  // Table 1: Low capsule / pill shape ($1.25m x 0.70m, H = 0.30m)
+  const t1Top = createBox(1.25, 0.07, 0.7, materials.travertine, [-5.2, 0.28, 2.4]);
+  const t1LegL = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.24, 24), materials.travertine);
+  t1LegL.position.set(-5.6, 0.12, 2.4);
+  t1LegL.castShadow = true;
+  const t1LegR = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.24, 24), materials.travertine);
+  t1LegR.position.set(-4.8, 0.12, 2.4);
+  t1LegR.castShadow = true;
 
-  tableGroup.add(largeTableTop, tableLeg1, tableLeg2, smallTableTop, smallTableLeg);
-  tagInteractive(tableGroup, 'travertine-coffee-table');
-  livingGroup.add(tableGroup);
+  // Table 2: Circular pedestal nesting table ($0.60m diameter, H = 0.38m)
+  const t2Top = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32), materials.travertine);
+  t2Top.position.set(-4.25, 0.36, 2.85);
+  t2Top.castShadow = true;
+  const t2Pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 0.33, 24), materials.travertine);
+  t2Pedestal.position.set(-4.25, 0.17, 2.85);
+  t2Pedestal.castShadow = true;
 
-  // D. Nordic Fluted Media Console & TV Wall ('media-slat-credenza')
+  // Tabletop Curated Styling
+  // 1. Heavy Roman Travertine Catchall Tray
+  const tray = createBox(0.32, 0.02, 0.22, materials.travertine, [-5.3, 0.33, 2.35]);
+  // 2. Sculptural artisanal ceramic bowl
+  const ceramicBowl = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.04, 0.05, 16), materials.matteCeramicWhite);
+  ceramicBowl.position.set(-5.3, 0.36, 2.35);
+  // 3. Stack of two architectural art monographs (Minimalism & Architecture)
+  const book1 = createBox(0.24, 0.022, 0.18, materials.darkCharcoalCabinet, [-5.0, 0.33, 2.5]);
+  const book2 = createBox(0.22, 0.018, 0.16, materials.oatLinen, [-5.0, 0.35, 2.5]);
+  book2.rotation.y = 0.12;
+  // 4. Subtle bronze candle holder
+  const candleBronze = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.08, 12), materials.subtleBronze);
+  candleBronze.position.set(-4.25, 0.43, 2.85);
+
+  coffeeTableGroup.add(t1Top, t1LegL, t1LegR, t2Top, t2Pedestal, tray, ceramicBowl, book1, book2, candleBronze);
+  tagInteractive(coffeeTableGroup, 'travertine-coffee-table');
+  livingGroup.add(coffeeTableGroup);
+
+  // E. Nordic Fluted Media Console & OLED Screen ('media-slat-credenza')
   const mediaGroup = new THREE.Group();
   mediaGroup.name = 'Product_MediaCredenza';
-  // Low console (Pos: [-7.2, 0.25, -1.25], L: 2.6m, H: 0.48m, D: 0.45m)
-  const consoleBody = createBox(2.6, 0.44, 0.44, materials.darkWalnut, [-7.2, 0.28, -1.2]);
-  // 75-inch Ultra-thin OLED TV mounted on fluted wood wall
-  const tvFrame = createBox(1.7, 0.98, 0.04, materials.matteBlackMetal, [-7.2, 1.6, -1.36]);
-  const tvGlass = createBox(1.66, 0.94, 0.01, materials.tvScreen, [-7.2, 1.6, -1.33]);
-  mediaGroup.add(consoleBody, tvFrame, tvGlass);
+
+  // Low credenza body (Pos: [-7.15, 0.28, -1.22], L: 2.6m, H: 0.44m, D: 0.42m)
+  const consoleBody = createBox(2.6, 0.42, 0.42, materials.smokedWalnut, [-7.15, 0.28, -1.22]);
+  const consoleBronzeShadow = createBox(2.64, 0.015, 0.44, materials.subtleBronze, [-7.15, 0.49, -1.22]);
+
+  // Frameless Ultra-Thin OLED TV Display (75-inch, 1.68m W x 0.96m H x 25mm D)
+  const tvFrame = createBox(1.68, 0.96, 0.025, materials.matteBlackMetal, [-7.15, 1.58, -1.37]);
+  const tvGlass = createBox(1.65, 0.93, 0.008, materials.tvScreen, [-7.15, 1.58, -1.35]);
+
+  // Media Console Decorative Shelf Styling
+  const mediaVase = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 0.24, 16), materials.matteCeramicWhite);
+  mediaVase.position.set(-8.1, 0.62, -1.22);
+  const mediaCarafe = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.18, 16), materials.smokedGlass);
+  mediaCarafe.position.set(-6.1, 0.59, -1.22);
+
+  mediaGroup.add(consoleBody, consoleBronzeShadow, tvFrame, tvGlass, mediaVase, mediaCarafe);
   tagInteractive(mediaGroup, 'media-slat-credenza');
   livingGroup.add(mediaGroup);
 
-  // E. Designer Cantilever Arc Floor Lamp ('designer-floor-lamp')
+  // F. Archimede Cantilever Arc Floor Lamp ('designer-floor-lamp')
   const lampGroup = new THREE.Group();
   lampGroup.name = 'Product_DesignerFloorLamp';
   lampGroup.position.set(-8.2, 0, 0.6);
-  // Marble base
-  const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 24), materials.calacatta);
-  lampBase.position.y = 0.06;
+
+  // Solid Calacatta marble cylindrical stabilizing base (D = 0.36m, H = 0.14m)
+  const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.14, 24), materials.calacatta);
+  lampBase.position.y = 0.07;
   lampBase.castShadow = true;
   lampGroup.add(lampBase);
-  // Brass arc stem
-  const stemMat = materials.brushedBrass;
-  const stem1 = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 2.1, 8), stemMat);
-  stem1.position.set(0, 1.1, 0);
-  stem1.castShadow = true;
-  lampGroup.add(stem1);
-  const stemArm = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1.2, 8), stemMat);
-  stemArm.position.set(0.5, 2.1, 0);
-  stemArm.rotation.z = -Math.PI / 3;
-  stemArm.castShadow = true;
-  lampGroup.add(stemArm);
-  // Spun brass dome shade
-  const shade = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.5), stemMat);
-  shade.position.set(1.0, 1.9, 0);
+
+  // Slender brushed brass arch stem & arm
+  const stemVertical = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 2.1, 8), materials.brushedBrass);
+  stemVertical.position.set(0, 1.12, 0);
+  stemVertical.castShadow = true;
+  lampGroup.add(stemVertical);
+
+  const stemArch = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.3, 8), materials.brushedBrass);
+  stemArch.position.set(0.55, 2.12, 0);
+  stemArch.rotation.z = -Math.PI / 3;
+  stemArch.castShadow = true;
+  lampGroup.add(stemArch);
+
+  // Spun champagne brass dome shade
+  const shade = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.5), materials.brushedBrass);
+  shade.position.set(1.15, 1.95, 0);
   shade.rotation.x = Math.PI;
   shade.castShadow = true;
   lampGroup.add(shade);
-  // Diffuser glow
-  const bulbGlow = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), materials.mirrorGlow);
-  bulbGlow.position.set(1.0, 1.85, 0);
-  lampGroup.add(bulbGlow);
+
+  // Warm glowing optical diffuser
+  const lampDiffuser = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), materials.luminaireGlow);
+  lampDiffuser.position.set(1.15, 1.9, 0);
+  lampGroup.add(lampDiffuser);
 
   tagInteractive(lampGroup, 'designer-floor-lamp');
   livingGroup.add(lampGroup);
 
-  // Large living room indoor plant (Fiddle leaf fig in white ceramic planter)
-  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.2, 0.55, 24), materials.calacatta);
-  pot.position.set(-8.8, 0.28, 5.4);
-  pot.castShadow = true;
-  livingGroup.add(pot);
-  const plantFoliage = new THREE.Mesh(new THREE.DodecahedronGeometry(0.65, 1), new THREE.MeshStandardMaterial({ color: 0x2b4a22, roughness: 0.6 }));
-  plantFoliage.position.set(-8.8, 1.1, 5.4);
-  plantFoliage.scale.set(0.9, 1.4, 0.9);
-  plantFoliage.castShadow = true;
-  livingGroup.add(plantFoliage);
+  // G. Statement Indoor Fiddle Leaf Fig Tree (*Ficus lyrata*)
+  const figPot = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.6, 24), materials.matteCeramicWhite);
+  figPot.position.set(-8.8, 0.3, 5.2);
+  figPot.castShadow = true;
+  livingGroup.add(figPot);
+
+  const figTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 1.8, 8), materials.smokedWalnut);
+  figTrunk.position.set(-8.8, 1.2, 5.2);
+  figTrunk.castShadow = true;
+  livingGroup.add(figTrunk);
+
+  // Sculptural broad green leaves
+  const foliageMat = new THREE.MeshStandardMaterial({ color: 0x2d4822, roughness: 0.55 });
+  [-0.2, 0.0, 0.2].forEach((ox, idx) => {
+    const leafCluster = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45 + idx * 0.05, 1), foliageMat);
+    leafCluster.position.set(-8.8 + ox, 1.8 + idx * 0.25, 5.2 + (idx % 2 === 0 ? 0.1 : -0.1));
+    leafCluster.scale.set(1.1, 0.9, 1.0);
+    leafCluster.castShadow = true;
+    livingGroup.add(leafCluster);
+  });
 
   furnitureGroup.add(livingGroup);
 
-  // ==========================================
-  // 2. DINING ROOM FURNITURE
-  // ==========================================
+  // =========================================================================
+  // 2. DINING ROOM (Formal Entertaining & Architectural Table Setting)
+  // =========================================================================
   const diningGroup = new THREE.Group();
   diningGroup.name = 'DiningZone';
 
   // A. Solstice 8-Seater Walnut Dining Table ('dining-table-set')
+  // Centered at X = 5.8, Z = 4.0. Generous 1.6m+ clearance on all 4 sides.
   const diningTableGroup = new THREE.Group();
   diningTableGroup.name = 'Product_DiningTableSet';
   diningTableGroup.position.set(5.8, 0, 4.0);
 
-  // Sculpted beveled walnut tabletop (L: 2.6m, W: 1.05m, H: 0.06m at Y: 0.74m)
-  const tabletop = createBox(2.6, 0.06, 1.05, materials.darkWalnut, [0, 0.73, 0]);
+  // Boat-shaped beveled tabletop in solid smoked walnut (2.60m L x 1.05m W x 60mm H at Y = 0.74m)
+  const tabletop = createBox(2.6, 0.06, 1.05, materials.smokedWalnut, [0, 0.73, 0]);
   diningTableGroup.add(tabletop);
 
-  // Cylindrical walnut pill legs
-  const legGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.7, 24);
-  const dl1 = new THREE.Mesh(legGeo, materials.darkWalnut);
+  // Monumental cylindrical walnut pill legs (D = 0.26m)
+  const legGeo = new THREE.CylinderGeometry(0.13, 0.13, 0.7, 24);
+  const dl1 = new THREE.Mesh(legGeo, materials.smokedWalnut);
   dl1.position.set(-0.85, 0.35, 0);
   dl1.castShadow = true;
-  const dl2 = new THREE.Mesh(legGeo, materials.darkWalnut);
+  const dl2 = new THREE.Mesh(legGeo, materials.smokedWalnut);
   dl2.position.set(0.85, 0.35, 0);
   dl2.castShadow = true;
   diningTableGroup.add(dl1, dl2);
 
+  // Tabletop Curated Minimalist Centerpiece Styling
+  const tableRunner = createBox(2.4, 0.005, 0.34, materials.oatLinen, [0, 0.763, 0], false, true);
+  const ceramicCenterpiece = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.05, 0.22, 16), materials.matteCeramicWhite);
+  ceramicCenterpiece.position.set(0, 0.88, 0);
+  const bronzeCandelabra1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.16, 8), materials.subtleBronze);
+  bronzeCandelabra1.position.set(-0.45, 0.84, 0);
+  const bronzeCandelabra2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.12, 8), materials.subtleBronze);
+  bronzeCandelabra2.position.set(0.45, 0.82, 0);
+
+  diningTableGroup.add(tableRunner, ceramicCenterpiece, bronzeCandelabra1, bronzeCandelabra2);
   tagInteractive(diningTableGroup, 'dining-table-set');
   diningGroup.add(diningTableGroup);
 
-  // B. Koto Dining Armchairs ('dining-armchair') - 8 chairs
+  // B. Koto Dining Armchairs ('dining-armchair') - 8 Tailored Chairs
   const diningChairGroup = new THREE.Group();
   diningChairGroup.name = 'Product_DiningArmchairGroup';
 
-  const createDiningChair = (pos, rotY) => {
+  const createDiningArmchair = (pos, rotY) => {
     const chair = new THREE.Group();
     chair.position.set(pos[0], pos[1], pos[2]);
     chair.rotation.y = rotY;
-    // Seat cushion
-    const seat = createBox(0.48, 0.08, 0.46, materials.creamBoucle, [0, 0.46, 0]);
-    // Curved backrest
-    const back = createBox(0.48, 0.32, 0.06, materials.creamBoucle, [0, 0.65, -0.2]);
-    // Slim walnut legs
-    const clPositions = [[-0.2, 0.22, -0.18], [0.2, 0.22, -0.18], [-0.2, 0.22, 0.18], [0.2, 0.22, 0.18]];
-    clPositions.forEach((cp) => {
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.014, 0.44, 8), materials.darkWalnut);
-      leg.position.set(cp[0], cp[1], cp[2]);
+
+    // Curved padded backrest in oat linen
+    const backrest = createBox(0.48, 0.32, 0.08, materials.oatLinen, [0, 0.65, -0.2]);
+    // High-resilience seat cushion
+    const seat = createBox(0.48, 0.08, 0.46, materials.oatLinen, [0, 0.46, 0]);
+    // Low armrest returns
+    const armL = createBox(0.05, 0.16, 0.34, materials.smokedWalnut, [-0.22, 0.54, -0.05]);
+    const armR = createBox(0.05, 0.16, 0.34, materials.smokedWalnut, [0.22, 0.54, -0.05]);
+
+    // Slim tapered smoked walnut legs
+    const clPositions = [[-0.2, -0.18], [0.2, -0.18], [-0.2, 0.18], [0.2, 0.18]];
+    clPositions.forEach(([cx, cz]) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.012, 0.44, 8), materials.smokedWalnut);
+      leg.position.set(cx, 0.22, cz);
       leg.castShadow = true;
       chair.add(leg);
     });
-    chair.add(seat, back);
+
+    chair.add(backrest, seat, armL, armR);
     return chair;
   };
 
-  // 4 chairs along South side of table (facing North)
+  // 4 chairs along South edge (facing North)
   for (let c = -0.9; c <= 0.9; c += 0.6) {
-    const chair = createDiningChair([5.8 + c, 0, 4.75], 0);
-    diningChairGroup.add(chair);
+    diningChairGroup.add(createDiningArmchair([5.8 + c, 0, 4.75], 0));
   }
-  // 4 chairs along North side of table (facing South)
+  // 4 chairs along North edge (facing South)
   for (let c = -0.9; c <= 0.9; c += 0.6) {
-    const chair = createDiningChair([5.8 + c, 0, 3.25], Math.PI);
-    diningChairGroup.add(chair);
+    diningChairGroup.add(createDiningArmchair([5.8 + c, 0, 3.25], Math.PI));
   }
 
   tagInteractive(diningChairGroup, 'dining-armchair');
@@ -399,81 +579,141 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
   const pendantGroup = new THREE.Group();
   pendantGroup.name = 'Product_LinearPendant';
   pendantGroup.position.set(5.8, 2.3, 4.0);
-  // Slim horizontal luminaire bar (L: 2.0m, H: 0.05m, D: 0.05m)
-  const bar = createBox(2.0, 0.05, 0.05, materials.brushedBrass, [0, 0, 0]);
-  // Glowing diffuser underside
-  const diffuser = createBox(1.96, 0.015, 0.045, materials.mirrorGlow, [0, -0.025, 0]);
-  pendantGroup.add(bar, diffuser);
-  // Aircraft suspension wires to ceiling
-  const wireMat = materials.matteBlackMetal;
-  const wire1 = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.9, 6), wireMat);
-  wire1.position.set(-0.75, 0.45, 0);
-  const wire2 = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.9, 6), wireMat);
-  wire2.position.set(0.75, 0.45, 0);
-  pendantGroup.add(wire1, wire2);
 
+  // Minimal extruded aluminum bar with brushed champagne brass finish (2.0m L x 50mm W x 50mm H)
+  const luminaireBar = createBox(2.0, 0.05, 0.05, materials.brushedBrass, [0, 0, 0]);
+  // Downward optical acrylic diffuser lens
+  const downDiffuser = createBox(1.96, 0.015, 0.045, materials.luminaireGlow, [0, -0.025, 0]);
+  // Upward ambient ceiling glow lens
+  const upDiffuser = createBox(1.96, 0.012, 0.045, materials.luminaireGlow, [0, 0.025, 0]);
+
+  // Ultra-fine aircraft suspension wires to ceiling
+  const w1 = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 0.9, 6), materials.matteBlackMetal);
+  w1.position.set(-0.75, 0.45, 0);
+  const w2 = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 0.9, 6), materials.matteBlackMetal);
+  w2.position.set(0.75, 0.45, 0);
+
+  pendantGroup.add(luminaireBar, downDiffuser, upDiffuser, w1, w2);
   tagInteractive(pendantGroup, 'linear-pendant-light');
   diningGroup.add(pendantGroup);
 
+  // D. Large Potted Architectural Olive Tree near dining window
+  const olivePot = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.18, 0.52, 24), materials.matteCeramicWhite);
+  olivePot.position.set(8.8, 0.26, 6.0);
+  olivePot.castShadow = true;
+  diningGroup.add(olivePot);
+
+  const oliveTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 1.5, 8), materials.smokedWalnut);
+  oliveTrunk.position.set(8.8, 1.0, 6.0);
+  oliveTrunk.castShadow = true;
+  diningGroup.add(oliveTrunk);
+
+  const oliveFoliage = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5, 1), new THREE.MeshStandardMaterial({ color: 0x48583c, roughness: 0.6 }));
+  oliveFoliage.position.set(8.8, 1.7, 6.0);
+  oliveFoliage.scale.set(1.1, 0.95, 1.0);
+  oliveFoliage.castShadow = true;
+  diningGroup.add(oliveFoliage);
+
   furnitureGroup.add(diningGroup);
 
-  // ==========================================
-  // 3. MODERN KITCHEN
-  // ==========================================
+  // =========================================================================
+  // 3. MODERN KITCHEN (Gourmet Chef Kitchen & Waterfall Island)
+  // =========================================================================
   const kitchenGroup = new THREE.Group();
   kitchenGroup.name = 'KitchenZone';
 
   // A. Monolithic Calacatta Gold Waterfall Island ('calacatta-kitchen-island')
+  // Centered at X = 5.8, Z = -1.8. Clear 1.7m walking space between island & back cabinetry.
   const islandGroup = new THREE.Group();
   islandGroup.name = 'Product_KitchenIsland';
   islandGroup.position.set(5.8, 0, -1.8);
-  // Main countertop slab (L: 3.2m, W: 1.1m, H: 0.08m at Y = 0.90m)
+
+  // Thick waterfall countertop slab (3.2m L x 1.1m W x 80mm H at Y = 0.88m)
   const islandTop = createBox(3.2, 0.08, 1.1, materials.calacatta, [0, 0.88, 0]);
-  // Left waterfall side panel (drops to floor)
-  const waterFallLeft = createBox(0.08, 0.84, 1.1, materials.calacatta, [-1.56, 0.42, 0]);
-  // Right waterfall side panel
-  const waterFallRight = createBox(0.08, 0.84, 1.1, materials.calacatta, [1.56, 0.42, 0]);
-  // Base cabinetry block under island (inset on dining side for leg overhang)
-  const islandCabinets = createBox(3.04, 0.84, 0.8, materials.darkCharcoalCabinet, [0, 0.42, -0.15]);
-  // Undermount sink (black composite cutout)
-  const sink = createBox(0.7, 0.02, 0.42, materials.matteBlackMetal, [-0.4, 0.91, -0.1]);
-  // Minimalist matte black gooseneck faucet
-  const faucetBase = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.38, 12), materials.matteBlackMetal);
+  // Left waterfall end slab dropping flush to the floor
+  const waterfallL = createBox(0.08, 0.84, 1.1, materials.calacatta, [-1.56, 0.42, 0]);
+  // Right waterfall end slab
+  const waterfallR = createBox(0.08, 0.84, 1.1, materials.calacatta, [1.56, 0.42, 0]);
+
+  // Integrated matte charcoal cabinetry base block (inset 250mm on dining side for barstool overhang)
+  const islandCabinets = createBox(3.04, 0.84, 0.82, materials.darkCharcoalCabinet, [0, 0.42, -0.14]);
+  // Concealed under-counter warm LED ribbon along island seating overhang
+  const islandLed = createBox(3.0, 0.015, 0.02, materials.luminaireGlow, [0, 0.83, 0.27], false, false);
+
+  // Undermount matte black prep sink & architectural gooseneck faucet
+  const sinkLedge = createBox(0.68, 0.02, 0.44, materials.matteBlackMetal, [-0.4, 0.91, -0.12]);
+  const faucetBase = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.38, 12), materials.matteBlackMetal);
   faucetBase.position.set(-0.4, 1.08, -0.32);
   faucetBase.castShadow = true;
-  const faucetSpout = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.015, 8, 16, Math.PI), materials.matteBlackMetal);
-  faucetSpout.position.set(-0.4, 1.25, -0.22);
-  faucetSpout.rotation.y = Math.PI / 2;
-  islandGroup.add(islandTop, waterFallLeft, waterFallRight, islandCabinets, sink, faucetBase, faucetSpout);
+  const faucetArch = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.014, 8, 16, Math.PI), materials.matteBlackMetal);
+  faucetArch.position.set(-0.4, 1.25, -0.21);
+  faucetArch.rotation.y = Math.PI / 2;
 
+  // Island Tabletop Curated Styling
+  // 1. Large artisanal footed ceramic bowl with organic fruit
+  const fruitBowl = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.08, 0.09, 16), materials.matteCeramicWhite);
+  fruitBowl.position.set(0.6, 0.96, 0.0);
+  fruitBowl.castShadow = true;
+  // Green pears & citrus in bowl
+  const fruit1 = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshStandardMaterial({ color: 0x8a9a4b, roughness: 0.5 }));
+  fruit1.position.set(0.6, 1.02, 0.0);
+  const fruit2 = new THREE.Mesh(new THREE.SphereGeometry(0.038, 8, 8), new THREE.MeshStandardMaterial({ color: 0xd8a93a, roughness: 0.5 }));
+  fruit2.position.set(0.64, 1.01, 0.04);
+
+  // 2. Walnut butcher block with brass handle
+  const cuttingBoard = createBox(0.42, 0.03, 0.28, materials.smokedWalnut, [1.05, 0.935, -0.1]);
+  // 3. Small marble mortar & pestle
+  const mortar = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.06, 12), materials.calacatta);
+  mortar.position.set(1.05, 0.98, -0.1);
+
+  islandGroup.add(
+    islandTop, waterfallL, waterfallR, islandCabinets, islandLed,
+    sinkLedge, faucetBase, faucetArch, fruitBowl, fruit1, fruit2, cuttingBoard, mortar
+  );
   tagInteractive(islandGroup, 'calacatta-kitchen-island');
   kitchenGroup.add(islandGroup);
 
-  // B. Linea Leather Counter Barstools ('designer-barstool') - 4 stools
+  // B. Trio of Suspended Drop Pendant Lights above Island
+  [-0.85, 0.0, 0.85].forEach((px) => {
+    const dropGroup = new THREE.Group();
+    dropGroup.position.set(5.8 + px, 2.4, -1.8);
+    // Brass / black cylindrical pendant body (D = 70mm, H = 220mm)
+    const pBody = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.22, 16), materials.brushedBrass);
+    pBody.castShadow = true;
+    const pLens = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 16), materials.luminaireGlow);
+    pLens.position.y = -0.11;
+    // Slim suspension cord to ceiling
+    const pCord = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 0.8, 6), materials.matteBlackMetal);
+    pCord.position.y = 0.5;
+    dropGroup.add(pBody, pLens, pCord);
+    kitchenGroup.add(dropGroup);
+  });
+
+  // C. Linea Leather Counter Barstools ('designer-barstool') - 4 Stools
   const barstoolGroup = new THREE.Group();
   barstoolGroup.name = 'Product_BarstoolGroup';
 
   const createBarstool = (xPos) => {
     const stool = new THREE.Group();
     stool.position.set(xPos, 0, -1.05);
-    // Leather padded seat
-    const seat = createBox(0.42, 0.06, 0.4, materials.saddleLeather, [0, 0.65, 0]);
-    // Low backrest lip
-    const backLip = createBox(0.42, 0.16, 0.06, materials.saddleLeather, [0, 0.74, 0.18]);
-    // Sled black steel legs & footrest
-    const frameMat = materials.matteBlackMetal;
-    const l1 = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.65, 8), frameMat);
-    l1.position.set(-0.18, 0.325, -0.16);
-    const l2 = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.65, 8), frameMat);
-    l2.position.set(0.18, 0.325, -0.16);
-    const l3 = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.65, 8), frameMat);
-    l3.position.set(-0.18, 0.325, 0.16);
-    const l4 = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.65, 8), frameMat);
-    l4.position.set(0.18, 0.325, 0.16);
-    // Footrest rail
-    const footrail = createBox(0.38, 0.02, 0.02, materials.brushedBrass, [0, 0.22, 0.16]);
 
-    stool.add(seat, backLip, l1, l2, l3, l4, footrail);
+    // Cognac saddle leather padded seat (Y = 0.65m)
+    const seat = createBox(0.42, 0.06, 0.4, materials.cognacLeather, [0, 0.65, 0]);
+    // Ergonomic low lumbar back lip
+    const backLip = createBox(0.42, 0.16, 0.06, materials.cognacLeather, [0, 0.74, 0.18]);
+
+    // Slender matte black steel sled frame
+    const frameMat = materials.matteBlackMetal;
+    [[-0.18, -0.16], [0.18, -0.16], [-0.18, 0.16], [0.18, 0.16]].forEach(([lx, lz]) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.65, 8), frameMat);
+      leg.position.set(lx, 0.325, lz);
+      leg.castShadow = true;
+      stool.add(leg);
+    });
+
+    // Brushed champagne brass footrest rail
+    const footrail = createBox(0.38, 0.02, 0.02, materials.brushedBrass, [0, 0.22, 0.16]);
+    stool.add(seat, backLip, footrail);
     return stool;
   };
 
@@ -484,85 +724,118 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
   tagInteractive(barstoolGroup, 'designer-barstool');
   kitchenGroup.add(barstoolGroup);
 
-  // Full-Height Rear Kitchen Cabinetry Wall (Z = -7.35, X: 6.0 to 9.7)
-  const rearCabinetry = createBox(3.6, 3.0, 0.65, materials.darkCharcoalCabinet, [7.85, 1.5, -7.35]);
-  // Built-in stainless steel double door refrigerator
-  const fridge = createBox(1.1, 2.0, 0.05, materials.stainlessSteel, [6.8, 1.0, -7.02]);
-  // Built-in wall ovens
-  const oven = createBox(0.7, 0.95, 0.05, materials.matteBlackMetal, [8.2, 1.2, -7.02]);
-  kitchenGroup.add(rearCabinetry, fridge, oven);
+  // D. Full-Height Seamless Kitchen Cabinetry Wall (Z = -7.35, X: 6.0 to 9.8)
+  const rearCabinetry = createBox(3.7, 3.0, 0.65, materials.darkCharcoalCabinet, [7.85, 1.5, -7.35]);
+  // Integrated Gaggenau-style double wall ovens with dark glass
+  const ovenStack = createBox(0.75, 1.05, 0.05, materials.tvScreen, [8.2, 1.25, -7.02]);
+  // Integrated French-door refrigerator in brushed stainless steel
+  const fridgePanels = createBox(1.1, 2.05, 0.05, materials.stainlessSteel, [6.8, 1.05, -7.02]);
+  kitchenGroup.add(rearCabinetry, ovenStack, fridgePanels);
 
-  // Side counter along East wall (X: 9.35, Z: -4.5 to -1.5)
-  const sideCounter = createBox(0.65, 0.9, 3.2, materials.calacatta, [9.45, 0.45, -3.2]);
-  kitchenGroup.add(sideCounter);
+  // E. Side Prep Counter along East Window Wall (X = 9.45, Z: -4.5 to -1.5)
+  const prepCounter = createBox(0.68, 0.9, 3.2, materials.calacatta, [9.45, 0.45, -3.2]);
+  // Floating open shelf with potted culinary herbs
+  const floatingKitchenShelf = createBox(0.24, 0.04, 2.4, materials.naturalOak, [9.55, 1.6, -3.2]);
+  const herbPot = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.09, 12), materials.matteCeramicWhite);
+  herbPot.position.set(9.55, 1.68, -3.2);
+  const herbBush = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshStandardMaterial({ color: 0x3d662a, roughness: 0.6 }));
+  herbBush.position.set(9.55, 1.77, -3.2);
+  kitchenGroup.add(prepCounter, floatingKitchenShelf, herbPot, herbBush);
 
   furnitureGroup.add(kitchenGroup);
 
-  // ==========================================
-  // 4. SECONDARY SHOWROOM / MASTER SUITE
-  // ==========================================
+  // =========================================================================
+  // 4. SECONDARY SHOWROOM / MASTER SUITE (Zen Luxury Product Gallery)
+  // =========================================================================
   const showroomGroup = new THREE.Group();
-  showroomGroup.name = 'ShowroomZone';
+  showroomGroup.name = 'ShowroomSuiteZone';
 
-  // Area Rug under bed (W: 4.0m, D: 3.5m)
-  const bedRug = createBox(4.0, 0.015, 3.5, materials.livingRug, [-6.0, 0.01, -4.8], false, true);
+  // A. Plush Wool Area Rug under bed (W: 4.2m, D: 3.6m)
+  const bedRug = createBox(4.2, 0.016, 3.6, materials.livingRug, [-6.0, 0.018, -4.8], false, true);
   showroomGroup.add(bedRug);
 
-  // A. Kyoto Floating Oak Platform Bed ('platform-bed-suite')
+  // B. Kyoto Floating Oak Platform Bed ('platform-bed-suite')
+  // Centered at X = -6.0, Z = -5.4
   const bedGroup = new THREE.Group();
   bedGroup.name = 'Product_PlatformBedSuite';
   bedGroup.position.set(-6.0, 0, -5.4);
 
-  // Oak base platform (W: 2.1m, L: 2.2m, H: 0.28m)
-  const bedPlatform = createBox(2.1, 0.26, 2.2, materials.naturalOak, [0, 0.13, 0]);
-  // Integrated floating nightstand shelves left & right
-  const nightstandLeft = createBox(0.55, 0.12, 0.42, materials.naturalOak, [-1.32, 0.28, -0.85]);
-  const nightstandRight = createBox(0.55, 0.12, 0.42, materials.naturalOak, [1.32, 0.28, -0.85]);
-  // Upholstered headboard
-  const headboard = createBox(2.0, 0.75, 0.14, materials.bedLinen, [0, 0.65, -1.05]);
-  // Mattress
-  const mattress = createBox(1.9, 0.28, 2.0, materials.creamBoucle, [0, 0.38, 0.05]);
-  // Folded luxury linen duvet
-  const duvet = createBox(1.92, 0.12, 1.4, materials.bedLinen, [0, 0.5, 0.35]);
-  // Sleeping pillows (pair)
-  const pillow1 = createBox(0.72, 0.14, 0.42, materials.bedLinen, [-0.48, 0.56, -0.7]);
-  const pillow2 = createBox(0.72, 0.14, 0.42, materials.bedLinen, [0.48, 0.56, -0.7]);
+  // Low platform in natural rift-cut white oak (2.1m W x 2.25m L x 0.28m H)
+  const bedPlatform = createBox(2.1, 0.26, 2.25, materials.naturalOak, [0, 0.13, 0]);
+  // Concealed under-bed warm LED floating nightlight
+  const underbedLed = createBox(1.9, 0.02, 2.0, materials.luminaireGlow, [0, 0.02, 0], false, false);
 
-  bedGroup.add(bedPlatform, nightstandLeft, nightstandRight, headboard, mattress, duvet, pillow1, pillow2);
+  // Integrated cantilevered floating nightstands left & right
+  const nightstandL = createBox(0.6, 0.12, 0.42, materials.naturalOak, [-1.35, 0.28, -0.85]);
+  const nightstandR = createBox(0.6, 0.12, 0.42, materials.naturalOak, [1.35, 0.28, -0.85]);
+
+  // Tailored upholstered headboard in Belgian linen
+  const headboard = createBox(2.0, 0.75, 0.14, materials.bedLinen, [0, 0.65, -1.05]);
+  // Premium mattress with pillow-top
+  const mattress = createBox(1.9, 0.28, 2.0, materials.creamBoucle, [0, 0.38, 0.05]);
+  // Folded Belgian linen duvet with natural drape
+  const duvet = createBox(1.92, 0.12, 1.4, materials.bedLinen, [0, 0.5, 0.35]);
+  // Sleeping pillows (pair of Euro shams + sleeping pillows)
+  const pillowL = createBox(0.72, 0.14, 0.42, materials.bedLinen, [-0.48, 0.56, -0.7]);
+  const pillowR = createBox(0.72, 0.14, 0.42, materials.bedLinen, [0.48, 0.56, -0.7]);
+
+  // Bedside Styling: Minimalist water carafe & art monograph
+  const bedCarafe = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.14, 12), materials.amberGlass);
+  bedCarafe.position.set(-1.35, 0.41, -0.85);
+  const bedBook = createBox(0.2, 0.02, 0.15, materials.darkCharcoalCabinet, [1.35, 0.35, -0.85]);
+
+  bedGroup.add(
+    bedPlatform, underbedLed, nightstandL, nightstandR,
+    headboard, mattress, duvet, pillowL, pillowR, bedCarafe, bedBook
+  );
   tagInteractive(bedGroup, 'platform-bed-suite');
   showroomGroup.add(bedGroup);
 
-  // B. Palma Organic Boucle Accent Chair ('accent-bedroom-armchair')
+  // Bedside Hanging Drop Pendants (pair of frosted globes with brass rods)
+  [-1.35, 1.35].forEach((nx) => {
+    const pendant = new THREE.Group();
+    pendant.position.set(-6.0 + nx, 1.5, -6.25);
+    const globe = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), materials.luminaireGlow);
+    const brassCap = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.05, 8), materials.brushedBrass);
+    brassCap.position.y = 0.1;
+    const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 1.6, 6), materials.brushedBrass);
+    wire.position.y = 0.9;
+    pendant.add(globe, brassCap, wire);
+    showroomGroup.add(pendant);
+  });
+
+  // C. Palma Organic Boucle Accent Chair ('accent-bedroom-armchair')
   const bedArmchairGroup = new THREE.Group();
   bedArmchairGroup.name = 'Product_BedroomAccentChair';
   bedArmchairGroup.position.set(-3.0, 0, -3.2);
-  bedArmchairGroup.rotation.y = -Math.PI * 0.25;
+  bedArmchairGroup.rotation.y = -Math.PI * 0.28;
 
-  const bedChairSeat = createBox(0.85, 0.22, 0.8, materials.creamBoucle, [0, 0.34, 0]);
-  const bedChairBack = createBox(0.85, 0.48, 0.25, materials.creamBoucle, [0, 0.6, -0.3]);
-  const bedChairPlinth = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.08, 24), materials.darkWalnut);
+  // Organic curved armchair seat & pillowed back
+  const bedChairSeat = createBox(0.86, 0.22, 0.8, materials.creamBoucle, [0, 0.34, 0]);
+  const bedChairBack = createBox(0.86, 0.48, 0.26, materials.creamBoucle, [0, 0.6, -0.3]);
+  const bedChairPlinth = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.08, 24), materials.naturalOak);
   bedChairPlinth.position.y = 0.04;
   bedChairPlinth.castShadow = true;
 
-  // Small travertine drink pedestal table next to chair
-  const drinkTable = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.15, 0.48, 24), materials.travertine);
-  drinkTable.position.set(0.65, 0.24, -0.2);
+  // Small organic travertine drink pedestal table next to chair
+  const drinkTable = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.16, 0.48, 24), materials.travertine);
+  drinkTable.position.set(0.68, 0.24, -0.15);
   drinkTable.castShadow = true;
 
   bedArmchairGroup.add(bedChairSeat, bedChairBack, bedChairPlinth, drinkTable);
   tagInteractive(bedArmchairGroup, 'accent-bedroom-armchair');
   showroomGroup.add(bedArmchairGroup);
 
-  // Modern abstract canvas art on the wall
-  const artFrame = createBox(1.4, 1.8, 0.04, materials.darkWalnut, [-8.5, 1.8, -1.62]);
-  const artCanvas = createBox(1.32, 1.72, 0.01, new THREE.MeshStandardMaterial({ color: 0xdfd8ca, roughness: 0.85 }), [-8.5, 1.8, -1.59]);
-  showroomGroup.add(artFrame, artCanvas);
+  // D. Large Minimalist Textured Plaster Art Canvas in Bedroom
+  const bedArtFrame = createBox(1.5, 1.9, 0.04, materials.smokedWalnut, [-8.5, 1.8, -1.62]);
+  const bedArtCanvas = createBox(1.42, 1.82, 0.01, materials.artCanvas1, [-8.5, 1.8, -1.59]);
+  showroomGroup.add(bedArtFrame, bedArtCanvas);
 
   furnitureGroup.add(showroomGroup);
 
-  // ==========================================
-  // 5. LUXURY SPA BATHROOM
-  // ==========================================
+  // =========================================================================
+  // 5. LUXURY SPA BATHROOM (Travertine Floating Vanity & Rain Shower)
+  // =========================================================================
   const bathGroup = new THREE.Group();
   bathGroup.name = 'BathroomZone';
 
@@ -571,61 +844,74 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
   vanityGroup.name = 'Product_TravertineVanity';
   vanityGroup.position.set(-0.25, 0, -7.2);
 
-  // Floating Travertine counter (W: 1.8m, D: 0.54m, H: 0.35m at Y: 0.55m)
+  // Floating carved Roman Travertine slab counter (1.80m W x 0.54m D x 0.35m H at Y = 0.58m)
   const vanityCounter = createBox(1.8, 0.35, 0.54, materials.travertine, [0, 0.6, 0]);
-  // Twin carved stone basins
-  const basin1 = createBox(0.52, 0.12, 0.38, materials.calacatta, [-0.45, 0.82, 0]);
-  const basin2 = createBox(0.52, 0.12, 0.38, materials.calacatta, [0.45, 0.82, 0]);
-  // Wall-mounted matte black faucets
-  const faucet1 = createBox(0.04, 0.04, 0.16, materials.matteBlackMetal, [-0.45, 1.05, -0.22]);
-  const faucet2 = createBox(0.04, 0.04, 0.16, materials.matteBlackMetal, [0.45, 1.05, -0.22]);
+  // Twin integrated Calacatta stone basin recesses
+  const basin1 = createBox(0.54, 0.12, 0.38, materials.calacatta, [-0.48, 0.82, 0]);
+  const basin2 = createBox(0.54, 0.12, 0.38, materials.calacatta, [0.48, 0.82, 0]);
 
-  // Large illuminated LED Backlit Pill Mirror
-  const mirrorFrame = createBox(1.6, 0.95, 0.03, materials.matteBlackMetal, [0, 1.8, -0.24]);
-  const mirrorGlass = createBox(1.54, 0.89, 0.01, materials.mirrorGlow, [0, 1.8, -0.22]);
+  // Minimalist wall-mounted matte black spout and mixer valves
+  const spout1 = createBox(0.03, 0.03, 0.18, materials.matteBlackMetal, [-0.48, 1.05, -0.22]);
+  const spout2 = createBox(0.03, 0.03, 0.18, materials.matteBlackMetal, [0.48, 1.05, -0.22]);
 
-  vanityGroup.add(vanityCounter, basin1, basin2, faucet1, faucet2, mirrorFrame, mirrorGlass);
+  // Large Backlit Ambient Pill Mirror (1.6m W x 0.95m H with warm LED halo glow)
+  const mirrorHalo = createBox(1.64, 0.99, 0.015, materials.luminaireGlow, [0, 1.8, -0.25], false, false);
+  const mirrorGlass = createBox(1.6, 0.95, 0.02, materials.calacatta, [0, 1.8, -0.23]);
+
+  // Vanity Tabletop Styling: Amber glass soap dispenser & rolled waffle hand towel
+  const soapDispenser = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 12), materials.amberGlass);
+  soapDispenser.position.set(0.0, 0.84, 0.05);
+  const rolledTowel = createBox(0.18, 0.08, 0.12, materials.oatLinen, [0.0, 0.82, -0.15]);
+
+  vanityGroup.add(vanityCounter, basin1, basin2, spout1, spout2, mirrorHalo, mirrorGlass, soapDispenser, rolledTowel);
   tagInteractive(vanityGroup, 'floating-travertine-vanity');
   bathGroup.add(vanityGroup);
 
-  // Walk-in Shower Enclosure (X: -1.8 to -0.6, Z: -7.5 to -5.2)
-  // Frameless fluted glass screen
-  const showerGlassScreen = createBox(0.02, 2.4, 1.5, materials.calacatta, [-0.6, 1.2, -6.1], false, false);
-  showerGlassScreen.material = new THREE.MeshPhysicalMaterial({
-    transmission: 0.88,
-    roughness: 0.25,
-    ior: 1.5,
-    transparent: true,
-    opacity: 0.8
-  });
-  // Overhead matte black ceiling rain shower head
-  const showerArm = createBox(0.03, 0.4, 0.03, materials.matteBlackMetal, [-1.3, 2.7, -6.5]);
-  const showerHead = createBox(0.35, 0.02, 0.35, materials.matteBlackMetal, [-1.3, 2.5, -6.5]);
-  bathGroup.add(showerGlassScreen, showerArm, showerHead);
+  // B. Frameless Fluted Glass Shower Screen & Ceiling Rain Shower
+  const showerScreen = createBox(0.02, 2.4, 1.5, materials.flutedGlass, [-0.6, 1.2, -6.1], false, false);
+  const rainShowerArm = createBox(0.03, 0.4, 0.03, materials.matteBlackMetal, [-1.2, 2.7, -6.5]);
+  const rainShowerHead = createBox(0.35, 0.02, 0.35, materials.matteBlackMetal, [-1.2, 2.5, -6.5]);
+  bathGroup.add(showerScreen, rainShowerArm, rainShowerHead);
 
-  // Wall-hung toilet (X: 0.9, Z: -5.5)
-  const toilet = createBox(0.42, 0.42, 0.58, materials.calacatta, [0.9, 0.38, -5.5]);
-  bathGroup.add(toilet);
+  // C. Wall-Hung Rimless Ceramic Toilet
+  const toilet = createBox(0.4, 0.42, 0.58, materials.matteCeramicWhite, [0.9, 0.38, -5.5]);
+  const flushPlate = createBox(0.24, 0.14, 0.01, materials.matteBlackMetal, [0.9, 0.95, -5.8]);
+  bathGroup.add(toilet, flushPlate);
 
   furnitureGroup.add(bathGroup);
 
-  // ==========================================
-  // 6. ENTRANCE HALLWAY & FOYER CONSOLE
-  // ==========================================
+  // =========================================================================
+  // 6. ENTRANCE FOYER & CORRIDOR (Architectural Gallery Reception)
+  // =========================================================================
   const foyerGroup = new THREE.Group();
   foyerGroup.name = 'FoyerZone';
 
-  // Architectural Foyer console table (Pos: [0.0, 0, 4.2], against pillar or divider)
-  const consoleTable = createBox(1.6, 0.78, 0.38, materials.naturalOak, [0.0, 0.42, 5.7]);
-  // Sculptural ceramic vase with dried pampas grass
-  const foyerVase = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.08, 0.42, 16), materials.travertine);
-  foyerVase.position.set(0.0, 0.98, 5.7);
+  // A. Architectural Console Table in Solid Oak & Travertine (Pos: [0.0, 0, 5.7])
+  const consoleTop = createBox(1.6, 0.06, 0.4, materials.naturalOak, [0.0, 0.78, 5.7]);
+  const consoleLegL = createBox(0.12, 0.75, 0.36, materials.travertine, [-0.65, 0.375, 5.7]);
+  const consoleLegR = createBox(0.12, 0.75, 0.36, materials.travertine, [0.65, 0.375, 5.7]);
+
+  // Curated artisanal ceramic vessel with dried branches on foyer console
+  const foyerVase = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.06, 0.38, 16), materials.matteCeramicWhite);
+  foyerVase.position.set(0.0, 1.0, 5.7);
   foyerVase.castShadow = true;
-  foyerGroup.add(consoleTable, foyerVase);
+  const branchStem = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.012, 0.75, 8), materials.smokedWalnut);
+  branchStem.position.set(0.0, 1.45, 5.7);
+  branchStem.rotation.z = 0.15;
+  branchStem.castShadow = true;
+
+  foyerGroup.add(consoleTop, consoleLegL, consoleLegR, foyerVase, branchStem);
+
+  // B. Large Minimalist Gallery Canvas Art on Foyer East Wall (X = 1.42, Z = 3.5)
+  const foyerArtFrame = createBox(0.04, 1.8, 1.3, materials.smokedWalnut, [1.42, 1.7, 3.5]);
+  const foyerArtCanvas = createBox(0.01, 1.72, 1.22, materials.artCanvas2, [1.39, 1.7, 3.5]);
+  foyerGroup.add(foyerArtFrame, foyerArtCanvas);
 
   furnitureGroup.add(foyerGroup);
 
-  // Generate 3D Hotspot Pins for all products in catalog
+  // =========================================================================
+  // 7. 3D HOTSPOT BEACON PINS FOR ALL SHOWROOM PRODUCTS
+  // =========================================================================
   productsCatalog.forEach((product) => {
     createHotspot(product);
   });

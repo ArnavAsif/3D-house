@@ -360,3 +360,92 @@ export function createRugTexture() {
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
+
+export function createAbstractArtTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  // Warm cream raw linen base
+  ctx.fillStyle = '#f0ece1';
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Subtle linen weave texture
+  for (let i = 0; i < 4000; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(215, 205, 190, 0.25)';
+    ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+  }
+
+  // Large organic plaster arch in warm beige
+  ctx.fillStyle = '#dfd5c2';
+  ctx.beginPath();
+  ctx.arc(256, 320, 160, Math.PI, 0);
+  ctx.lineTo(416, 440);
+  ctx.lineTo(96, 440);
+  ctx.closePath();
+  ctx.fill();
+
+  // Impasto relief line work
+  ctx.strokeStyle = 'rgba(110, 95, 80, 0.35)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(256, 320, 140, Math.PI, 0);
+  ctx.stroke();
+
+  // Minimalist charcoal circle
+  ctx.fillStyle = '#2b2a28';
+  ctx.beginPath();
+  ctx.arc(256, 180, 48, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Subtle terracotta accent wash
+  ctx.fillStyle = 'rgba(180, 105, 75, 0.18)';
+  ctx.beginPath();
+  ctx.arc(360, 260, 70, 0, Math.PI * 2);
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+export function createAbstractArtTexture2() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  // Raw plaster canvas base
+  ctx.fillStyle = '#ece8df';
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Textured plaster wash
+  for (let i = 0; i < 3000; i++) {
+    ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.35)' : 'rgba(190, 180, 165, 0.2)';
+    ctx.fillRect(Math.random() * 512, Math.random() * 512, 3, 3);
+  }
+
+  // Minimalist diagonal and vertical architectural lines
+  ctx.strokeStyle = '#32312f';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(80, 100);
+  ctx.lineTo(80, 420);
+  ctx.moveTo(80, 260);
+  ctx.lineTo(420, 260);
+  ctx.stroke();
+
+  // Warm sand textured rectangle
+  ctx.fillStyle = '#d2c5ae';
+  ctx.fillRect(160, 120, 180, 220);
+
+  // Ochre accent bar
+  ctx.fillStyle = '#b89458';
+  ctx.fillRect(220, 360, 160, 12);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
