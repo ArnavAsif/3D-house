@@ -11,7 +11,7 @@ export const ROOMS_DATA = [
     dollhousePos: [0.0, 12.0, 16.0],
     description: 'Raised exterior entrance porch with stone steps, lush architectural planters, dual warm wall sconces, and a monumental 2.8m oversized timber pivot door.',
     features: ['Architectural Pivot Timber Door', 'Natural Stone Stepping Plinth', 'Monstera & Ficus Planters', '2700K Warm Wall Sconces'],
-    highlightProducts: ['architectural-front-door']
+    highlightProducts: ['product-18']
   },
   {
     id: 'foyer',
@@ -23,7 +23,7 @@ export const ROOMS_DATA = [
     dollhousePos: [0.0, 14.0, 12.0],
     description: 'Spacious 3.5m wide reception spine with honed Calacatta marble slab flooring, indirect ceiling cove lighting, and seamless unobstructed sightlines to all living spaces.',
     features: ['Honed Calacatta Marble Slabs', 'Recessed Warm Ceiling Light Coves', '3.5m Wide Unobstructed Flow', 'Central Distribution Spine'],
-    highlightProducts: []
+    highlightProducts: ['product-07', 'product-08']
   },
   {
     id: 'living',
@@ -35,7 +35,7 @@ export const ROOMS_DATA = [
     dollhousePos: [-8.0, 12.0, 8.0],
     description: 'Expansive sunken-feel living room flanked by floor-to-ceiling panoramic glass windows. Featuring a modular cream sectional sofa, dual travertine tables, acoustic wood slat media wall, and designer reading nook.',
     features: ['Floor-to-Ceiling Panoramic Windows', 'Modular Cream Boucle Sectional', 'Acoustic Fluted Wood Media Wall', 'Cantilever Arc Floor Lamp'],
-    highlightProducts: ['modular-sectional-sofa', 'modern-lounge-chair', 'travertine-coffee-table', 'media-slat-credenza', 'designer-floor-lamp']
+    highlightProducts: ['product-01', 'product-02', 'product-03', 'product-04', 'product-05', 'product-06']
   },
   {
     id: 'dining',
@@ -47,7 +47,7 @@ export const ROOMS_DATA = [
     dollhousePos: [8.0, 12.0, 8.0],
     description: 'Refined open-plan dining space with a solid American walnut 8-seater table, tailored upholstered armchairs, suspended architectural linear pendant, and full-height exterior window wall.',
     features: ['Solid Walnut 8-Seater Table', 'Architectural Dual-Emission Linear Luminaire', 'Travertine Feature Wall', 'Direct Connection to Kitchen'],
-    highlightProducts: ['dining-table-set', 'dining-armchair', 'linear-pendant-light']
+    highlightProducts: ['product-09', 'product-10', 'product-11']
   },
   {
     id: 'kitchen',
@@ -59,7 +59,7 @@ export const ROOMS_DATA = [
     dollhousePos: [8.0, 12.0, -4.0],
     description: 'State-of-the-art chef kitchen anchored by a monolithic 3.2m Calacatta marble waterfall island with 4 leather barstools, seamless matte charcoal cabinetry, integrated appliances, and rear sliding glass doors.',
     features: ['Monolithic Calacatta Waterfall Island', 'Seamless Integrated Cabinetry & Fridge', 'Under-Counter Warm LED Task Strips', 'Rear Patio Glass Access'],
-    highlightProducts: ['calacatta-kitchen-island', 'designer-barstool']
+    highlightProducts: ['product-12', 'product-13', 'product-14']
   },
   {
     id: 'showroom',
@@ -71,7 +71,7 @@ export const ROOMS_DATA = [
     dollhousePos: [-8.0, 12.0, -6.0],
     description: 'Versatile luxury master suite and dedicated interactive product showroom featuring a floating oak platform bed, acoustic slat headboard with cove lighting, organic boucle armchair, and private garden patio access.',
     features: ['Floating Oak Platform Bed', 'Acoustic Wood Slat Feature Wall', 'Reading Lounge with Boucle Armchair', 'Sliding Doors to Private Garden'],
-    highlightProducts: ['platform-bed-suite', 'accent-bedroom-armchair']
+    highlightProducts: ['product-15', 'product-16']
   },
   {
     id: 'bathroom',
@@ -83,7 +83,7 @@ export const ROOMS_DATA = [
     dollhousePos: [0.0, 12.0, -8.0],
     description: 'Spa-like sanctuary with large-format limestone tiles, a floating carved travertine double vanity, frameless fluted glass walk-in rain shower, backlit ambient pill mirror, and matte black fixtures.',
     features: ['Floating Carved Travertine Vanity', 'Backlit Illuminated Ambient Mirror', 'Walk-in Fluted Glass Rain Shower', 'Matte Black Minimalist Fixtures'],
-    highlightProducts: ['floating-travertine-vanity']
+    highlightProducts: ['product-17']
   },
   {
     id: 'garden',

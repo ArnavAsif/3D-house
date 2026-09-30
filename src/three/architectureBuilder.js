@@ -535,6 +535,7 @@ export function buildArchitecture(scene) {
 
   // 2. Door Leaf (1.64m W x 2.76m H x 80mm Thick with Vertical Fluted Teak)
   const pivotDoorLeaf = createBox(1.64, 2.76, 0.08, materials.timberDoor, [0, 1.38, 0], 'FrontPivotDoorLeaf');
+  pivotDoorLeaf.userData = { productId: 'product-18', isInteractive: true };
   frontDoorSystem.add(pivotDoorLeaf);
 
   // 3. Stainless Steel Top & Bottom Pivot Hinge Plates (80mm circular discs)
@@ -550,6 +551,7 @@ export function buildArchitecture(scene) {
   const standoff2 = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 0.8, 0.055]);
   // Vertical handle bar (1.8m H x 35mm W x 20mm D)
   const handleBarOuter = createBox(0.035, 1.8, 0.02, materials.brassMetal, [0.62, 1.4, 0.095], 'FrontHandleOuter');
+  handleBarOuter.userData = { productId: 'product-18', isInteractive: true };
   // Matching interior handle
   const standoff1In = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 2.0, -0.055]);
   const standoff2In = createBox(0.025, 0.025, 0.07, materials.brassMetal, [0.62, 0.8, -0.055]);
@@ -775,6 +777,7 @@ export function buildArchitecture(scene) {
   return {
     group: archGroup,
     ceilingGroup,
-    materials
+    materials,
+    frontDoorSystem
   };
 }

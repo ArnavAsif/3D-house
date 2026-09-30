@@ -548,13 +548,71 @@ body, html {
   background: #e5ded3;
 }
 
-.modal-room-tag {
-  font-size: 0.75rem;
+.modal-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.modal-id-tag {
+  font-family: 'SF Mono', Consolas, Monaco, monospace;
+  font-size: 0.7rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  background: rgba(184, 146, 79, 0.12);
   color: var(--color-gold);
-  margin-bottom: 6px;
+  border: 1px solid rgba(184, 146, 79, 0.35);
+  border-radius: 4px;
+}
+
+.modal-room-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-charcoal);
+  background: #f3efe8;
+  padding: 3px 9px;
+  border-radius: 4px;
+}
+
+.modal-placement-tag {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #726f68;
+  background: #faf7f2;
+  padding: 3px 9px;
+  border-radius: 4px;
+  border: 1px solid #eae5dc;
+}
+
+.shopify-synced-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #276738;
+  background: #eaf4ed;
+  border: 1px solid #c2e2cc;
+  border-radius: 999px;
+  padding: 3px 9px;
+  margin-left: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.shopify-synced-pill::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2ea44f;
+  box-shadow: 0 0 6px #2ea44f;
 }
 
 .modal-product-title {
@@ -567,7 +625,7 @@ body, html {
 
 .modal-price-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   margin-bottom: 14px;
 }

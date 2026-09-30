@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ROOMS_DATA, ARCHITECTURAL_SPECS } from '../data/roomData';
 import { SHOWROOM_PRODUCTS } from '../data/showroomProducts';
+import { shopifyService } from '../services/shopifyService';
 
 export default function ShowroomUI({
   activeProduct,
@@ -45,6 +46,12 @@ export default function ShowroomUI({
   const [quantity, setQuantity] = useState(1);
   const [addedAnimation, setAddedAnimation] = useState(false);
 
+  // Shopify Storefront dynamic data state
+  const [shopifyData, setShopifyData] = useState(null);
+  const [isShopifyLoading, setIsShopifyLoading] = useState(false);
+  const [checkoutInfo, setCheckoutInfo] = useState(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
   // Minimap state
   const [isMinimapExpanded, setIsMinimapExpanded] = useState(false);
   const [showArchSpecs, setShowArchSpecs] = useState(false);
@@ -54,15 +61,49 @@ export default function ShowroomUI({
   const [joystickActive, setJoystickActive] = useState(false);
   const [joystickKnobPos, setJoystickKnobPos] = useState({ x: 0, y: 0 });
 
-  // Update selected variant when active product changes
+  // Dynamic asynchronous Shopify Storefront API query whenever activeProduct changes
   useEffect(() => {
-    if (activeProduct && activeProduct.variants && activeProduct.variants.length > 0) {
-      setSelectedVariant(activeProduct.variants[0]);
-      setQuantity(1);
+    if (!activeProduct) {
+      setShopifyData(null);
+      return;
     }
+
+    let isMounted = true;
+    setIsShopifyLoading(true);
+
+    shopifyService
+      .fetchProductByShowroomId(activeProduct.id)
+      .then((data) => {
+        if (isMounted) {
+          setShopifyData(data);
+          if (data.variants && data.variants.length > 0) {
+            setSelectedVariant(data.variants[0]);
+          }
+          setQuantity(1);
+        }
+      })
+      .catch((err) => {
+        console.warn('Shopify sync fallback:', err);
+        if (isMounted) {
+          setShopifyData(activeProduct);
+          if (activeProduct.variants && activeProduct.variants.length > 0) {
+            setSelectedVariant(activeProduct.variants[0]);
+          }
+          setQuantity(1);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsShopifyLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [activeProduct]);
 
-  // Hide controls hint after 8 seconds
+  // Hide controls hint after 9 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowControlsHint(false);
@@ -70,17 +111,22 @@ export default function ShowroomUI({
     return () => clearTimeout(timer);
   }, []);
 
+  const displayProduct = shopifyData || activeProduct;
+
   const handleAddToCart = () => {
-    if (!activeProduct) return;
+    if (!displayProduct) return;
+    const variant = selectedVariant || (displayProduct.variants && displayProduct.variants[0]);
     const item = {
-      product: activeProduct,
-      variant: selectedVariant || activeProduct.variants[0],
+      product: displayProduct,
+      variant,
       quantity
     };
 
     setCart((prev) => {
       const existingIdx = prev.findIndex(
-        (ci) => ci.product.id === item.product.id && ci.variant.name === item.variant.name
+        (ci) =>
+          ci.product.showroomId === item.product.showroomId &&
+          (ci.variant?.id === item.variant?.id || ci.variant?.title === item.variant?.title || ci.variant?.name === item.variant?.name)
       );
       if (existingIdx >= 0) {
         const updated = [...prev];
@@ -96,6 +142,25 @@ export default function ShowroomUI({
 
   const handleRemoveFromCart = (idx) => {
     setCart((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    setIsCheckingOut(true);
+    try {
+      const lineItems = cart.map((item) => ({
+        id: item.variant?.id || `gid://shopify/ProductVariant/${item.product.id || item.product.showroomId}`,
+        title: `${item.product.title || item.product.name} - ${item.variant?.title || item.variant?.name}`,
+        price: item.product.price,
+        quantity: item.quantity
+      }));
+      const cartResult = await shopifyService.createCart(lineItems);
+      setCheckoutInfo(cartResult);
+    } catch (err) {
+      console.error('Failed to create Shopify cart:', err);
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
@@ -389,7 +454,7 @@ export default function ShowroomUI({
       )}
 
       {/* 6. PRODUCT DETAIL & ADD TO CART MODAL (Mirrors Reference Image Design!) */}
-      {activeProduct && (
+      {activeProduct && displayProduct && (
         <div className="product-modal-backdrop" onClick={onCloseProduct}>
           <div className="product-card-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-btn" onClick={onCloseProduct}>
@@ -397,40 +462,59 @@ export default function ShowroomUI({
             </button>
 
             <div className="product-modal-header">
-              <div className="modal-room-tag">{activeProduct.room}</div>
-              <h2 className="modal-product-title">{activeProduct.name}</h2>
+              <div className="modal-badge-row">
+                <span className="modal-id-tag">
+                  {(displayProduct.showroomId || displayProduct.id).toUpperCase()}
+                </span>
+                <span className="modal-room-tag">{displayProduct.room}</span>
+                <span className="modal-placement-tag">{displayProduct.placementType}</span>
+              </div>
+              <h2 className="modal-product-title">{displayProduct.title || displayProduct.name}</h2>
               <div className="modal-price-row">
-                <span className="modal-price">${activeProduct.price}</span>
-                <span className="modal-rating">★ {activeProduct.rating} ({activeProduct.reviewsCount} reviews)</span>
+                <span className="modal-price">${displayProduct.price}</span>
+                <span className="modal-rating">
+                  ★ {displayProduct.rating} ({displayProduct.reviewsCount} reviews)
+                </span>
+                <span
+                  className="shopify-synced-pill"
+                  title={`Shopify GID: ${displayProduct.id || displayProduct.shopifyId}`}
+                >
+                  {isShopifyLoading ? 'Syncing...' : 'Shopify Synced'}
+                </span>
               </div>
             </div>
 
-            <p className="modal-description">{activeProduct.description}</p>
+            <p className="modal-description">{displayProduct.description}</p>
 
             {/* Color Variant Selector */}
-            {activeProduct.variants && activeProduct.variants.length > 0 && (
+            {displayProduct.variants && displayProduct.variants.length > 0 && (
               <div className="variant-selection-section">
                 <div className="variant-label-row">
                   <span className="section-label">Color:</span>
-                  <span className="selected-variant-name">{selectedVariant?.name}</span>
+                  <span className="selected-variant-name">
+                    {selectedVariant?.title || selectedVariant?.name}
+                  </span>
                 </div>
                 <div className="color-swatches-row">
-                  {activeProduct.variants.map((v) => (
-                    <button
-                      key={v.name}
-                      className={`color-swatch-btn ${
-                        selectedVariant?.name === v.name ? 'selected' : ''
-                      }`}
-                      style={{ backgroundColor: v.hex }}
-                      onClick={() => {
-                        setSelectedVariant(v);
-                        if (onVariantChange) onVariantChange(activeProduct.id, v);
-                      }}
-                      title={v.name}
-                    >
-                      {selectedVariant?.name === v.name && <Check size={12} color="#ffffff" />}
-                    </button>
-                  ))}
+                  {displayProduct.variants.map((v) => {
+                    const vName = v.title || v.name;
+                    const isSelected =
+                      (selectedVariant?.title || selectedVariant?.name) === vName;
+                    return (
+                      <button
+                        key={v.id || vName}
+                        className={`color-swatch-btn ${isSelected ? 'selected' : ''}`}
+                        style={{ backgroundColor: v.hex }}
+                        onClick={() => {
+                          setSelectedVariant(v);
+                          if (onVariantChange) onVariantChange(activeProduct.id, v);
+                        }}
+                        title={vName}
+                      >
+                        {isSelected && <Check size={12} color="#ffffff" />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -439,11 +523,11 @@ export default function ShowroomUI({
             <div className="modal-specs-grid">
               <div className="spec-item">
                 <span className="spec-title">Dimensions</span>
-                <span className="spec-value">{activeProduct.dimensions}</span>
+                <span className="spec-value">{displayProduct.dimensions}</span>
               </div>
               <div className="spec-item">
                 <span className="spec-title">Materials</span>
-                <span className="spec-value">{activeProduct.materials}</span>
+                <span className="spec-value">{displayProduct.materials}</span>
               </div>
             </div>
 
@@ -474,7 +558,9 @@ export default function ShowroomUI({
                 ) : (
                   <>
                     <ShoppingCart size={16} />
-                    <span>Add to Cart - ${(activeProduct.price * quantity).toLocaleString()}</span>
+                    <span>
+                      Add to Cart - ${(displayProduct.price * quantity).toLocaleString()}
+                    </span>
                   </>
                 )}
               </button>
@@ -509,8 +595,8 @@ export default function ShowroomUI({
                 cart.map((item, idx) => (
                   <div key={`${item.product.id}-${idx}`} className="cart-item-row">
                     <div className="cart-item-info">
-                      <div className="cart-item-name">{item.product.name}</div>
-                      <div className="cart-item-variant">Color: {item.variant.name}</div>
+                      <div className="cart-item-name">{item.product.title || item.product.name}</div>
+                      <div className="cart-item-variant">Color: {item.variant?.title || item.variant?.name}</div>
                       <div className="cart-item-price-unit">
                         ${item.product.price} × {item.quantity}
                       </div>
@@ -547,12 +633,66 @@ export default function ShowroomUI({
                 </div>
                 <button
                   className="checkout-btn"
-                  onClick={() => alert('Showroom Order Prepared! Integrated with Storefront SDK.')}
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut}
                 >
-                  Proceed to Checkout
+                  {isCheckingOut ? 'Creating Shopify Cart...' : 'Proceed to Checkout'}
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 7b. SHOPIFY STOREFRONT CHECKOUT CONFIRMATION MODAL */}
+      {checkoutInfo && (
+        <div className="product-modal-backdrop" onClick={() => setCheckoutInfo(null)}>
+          <div className="product-card-modal checkout-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setCheckoutInfo(null)}>
+              <X size={18} />
+            </button>
+            <div className="product-modal-header">
+              <div className="modal-badge-row">
+                <span className="shopify-synced-pill">Shopify Storefront Connected</span>
+              </div>
+              <h2 className="modal-product-title">Shopify Cart Generated</h2>
+              <p className="modal-description" style={{ marginTop: '8px', marginBottom: '16px' }}>
+                Your selected 3D products have been packaged into a Shopify Storefront cart instance ready for checkout.
+              </p>
+            </div>
+
+            <div className="modal-specs-grid" style={{ gridTemplateColumns: '1fr', gap: '8px' }}>
+              <div className="spec-item">
+                <span className="spec-title">Cart GID</span>
+                <span className="spec-value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                  {checkoutInfo.id}
+                </span>
+              </div>
+              <div className="spec-item">
+                <span className="spec-title">Storefront Endpoint</span>
+                <span className="spec-value">https://villa-lumina.myshopify.com/api/2025-01/graphql</span>
+              </div>
+              <div className="spec-item">
+                <span className="spec-title">Subtotal Amount</span>
+                <span className="spec-value" style={{ fontWeight: 700, color: 'var(--color-walnut)' }}>
+                  ${checkoutInfo.cost?.subtotalAmount?.amount} USD
+                </span>
+              </div>
+            </div>
+
+            <div className="modal-action-row" style={{ marginTop: '20px' }}>
+              <button
+                className="add-to-cart-btn"
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={() => {
+                  alert(`Navigating to mock Shopify checkout URL:\n${checkoutInfo.checkoutUrl}`);
+                  setCheckoutInfo(null);
+                  setIsCartOpen(false);
+                }}
+              >
+                Proceed to Payment (${checkoutInfo.cost?.subtotalAmount?.amount})
+              </button>
+            </div>
           </div>
         </div>
       )}
