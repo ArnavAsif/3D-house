@@ -48,12 +48,6 @@ export default function Scene() {
   const [isNight, setIsNight] = useState(false);
   const [showCeiling, setShowCeiling] = useState(true);
   const [activeProduct, setActiveProduct] = useState<string | null>(null);
-  const [playerPosition, setPlayerPosition] = useState({
-    x: 0.0,
-    z: 11.2,
-    yaw: 0.0,
-    mode: 'FIRST_PERSON'
-  });
   const [joystickVector, setJoystickVector] = useState({ x: 0, y: 0 });
 
   // Accessible door interaction state
@@ -129,7 +123,6 @@ export default function Scene() {
             <Player
               currentMode={currentMode}
               joystickVector={joystickVector}
-              onPositionUpdate={setPlayerPosition}
             />
 
             {/* First-Person Human Eye-Height Camera System */}
@@ -149,7 +142,6 @@ export default function Scene() {
         onToggleNight={() => setIsNight(!isNight)}
         showCeiling={showCeiling}
         onToggleCeiling={() => setShowCeiling(!showCeiling)}
-        playerPosition={playerPosition}
         onJoystickMove={setJoystickVector}
         doorState={doorState}
         onToggleDoor={() => toggleDoorRef.current?.()}

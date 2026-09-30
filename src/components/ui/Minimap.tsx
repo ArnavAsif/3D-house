@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigation, Maximize2, Minimize2 } from 'lucide-react';
+import { playerStore, PlayerSpatialState } from '@/lib/store/playerStore';
 
 interface MinimapProps {
-  playerPosition: { x: number; z: number; yaw: number };
+  playerPosition?: { x: number; z: number; yaw: number };
   hoveredProductId?: string | null;
   onSelectProduct?: (productId: string) => void;
 }
@@ -18,8 +19,17 @@ interface MinimapProps {
  * - Closed private wings: Master Bedroom Suite & Spa Bathroom (COMING SOON).
  * - Real-time player coordinate positioning & viewing angle cone.
  */
-export default function Minimap({ playerPosition }: MinimapProps) {
+export default function Minimap({ playerPosition: propPosition }: MinimapProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [pos, setPos] = useState<PlayerSpatialState>(() => playerStore.get());
+
+  useEffect(() => {
+    return playerStore.subscribe((state) => {
+      setPos(state);
+    });
+  }, []);
+
+  const activePos = propPosition || pos;
 
   return (
     <div className={`minimap-container ${isExpanded ? 'expanded' : ''}`}>
@@ -117,10 +127,10 @@ export default function Minimap({ playerPosition }: MinimapProps) {
           <line x1="1.5" y1="-3.0" x2="1.5" y2="-7.6" className="map-wall-interior" strokeWidth="0.2" />
 
           {/* Real-time Player Position & View Angle Cone */}
-          {playerPosition && (
+          {activePos && (
             <g
-              transform={`translate(${playerPosition.x}, ${playerPosition.z}) rotate(${
-                (-playerPosition.yaw * 180) / Math.PI
+              transform={`translate(${activePos.x}, ${activePos.z}) rotate(${
+                (-activePos.yaw * 180) / Math.PI
               })`}
             >
               <polygon points="0,0 -1.5,-3 1.5,-3" className="player-view-cone" />

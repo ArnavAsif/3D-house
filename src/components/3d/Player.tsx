@@ -4,24 +4,32 @@ import React, { useEffect, useRef } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { collisionEngine } from './CollisionSystem';
+import { playerStore } from '@/lib/store/playerStore';
 
 interface PlayerProps {
   currentMode: string;
   joystickVector?: { x: number; y: number };
-  onPositionUpdate: (pos: { x: number; z: number; yaw: number; mode: string }) => void;
+  onPositionUpdate?: (pos: { x: number; z: number; yaw: number; mode: string }) => void;
   teleportTarget?: { x: number; z: number; yaw?: number } | null;
 }
 
+// Re-usable scratch vectors to ensure ZERO per-frame garbage collection
+const _moveVec = new THREE.Vector3();
+const _targetPos = new THREE.Vector3();
+const _forward = new THREE.Vector3();
+const _lookTarget = new THREE.Vector3();
+const _upAxis = new THREE.Vector3(0, 1, 0);
+const _pitchAxis = new THREE.Vector3(1, 0, 0);
+
 /**
  * Player
- * Smooth, frame-rate independent First-Person avatar & movement controller.
+ * High-performance, zero-allocation First-Person avatar & movement controller.
  *
- * Performance & Polish Features:
- * - Spawns OUTSIDE the front entrance of the house at [0.0, 1.65, 11.2], facing north.
- * - Velocity-based acceleration & friction damping: eliminates abrupt jumps, pops, and stuttering.
- * - Smooth damped mouse look with pitch clamping [-75°, +75°].
- * - Supports both smooth click-drag look and optional pointer lock.
- * - Throttles React state updates (10Hz) to prevent high-frequency reconciliation thrashing.
+ * Performance & Physics Highlights:
+ * - Pre-allocated module-level Vector3s: ZERO heap allocations in useFrame loop.
+ * - Velocity-based acceleration & friction damping with frame-rate independent delta time.
+ * - Buttery-smooth mouse look damping (rate: 22.0) with pitch clamping [-75°, +75°].
+ * - Decoupled position broadcast to playerStore: ZERO React state re-renders of the 3D scene while walking!
  * - Lightweight 2D circle-box collision resolution with tangential sliding.
  */
 export default function Player({
@@ -34,21 +42,21 @@ export default function Player({
 
   // Initial spawn: Outside facing the front entrance portico
   const playerPos = useRef(new THREE.Vector3(0.0, 1.65, 11.2));
-  const playerYaw = useRef(0.0); // Facing straight North towards entrance
-  const playerPitch = useRef(-0.02); // Subtle natural forward gaze
+  const playerYaw = useRef(0.0);
+  const playerPitch = useRef(-0.02);
 
   // Smooth look target angles
   const targetYaw = useRef(0.0);
   const targetPitch = useRef(-0.02);
 
-  // Velocity integration for smooth acceleration/deceleration
+  // Velocity integration
   const velocity = useRef(new THREE.Vector2(0, 0));
 
   // Pointer dragging state
   const isDragging = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
-  // Throttled React state update timer (10Hz)
+  // Throttled store update timer (15Hz)
   const lastUpdateTimer = useRef(0);
 
   const keys = useRef({
@@ -133,7 +141,6 @@ export default function Player({
     const dom = gl.domElement;
 
     const onPointerDown = (e: PointerEvent) => {
-      // Primary button drag
       if (e.button === 0) {
         isDragging.current = true;
         lastMousePos.current = { x: e.clientX, y: e.clientY };
@@ -153,7 +160,7 @@ export default function Player({
         const dy = e.clientY - lastMousePos.current.y;
         lastMousePos.current = { x: e.clientX, y: e.clientY };
 
-        const lookSpeed = 0.0028;
+        const lookSpeed = 0.0026;
         targetYaw.current -= dx * lookSpeed;
         targetPitch.current -= dy * lookSpeed;
         targetPitch.current = Math.max(-1.3, Math.min(1.3, targetPitch.current));
@@ -175,7 +182,7 @@ export default function Player({
     };
   }, [currentMode, gl.domElement]);
 
-  // Per-frame physics update & smooth movement integration
+  // Per-frame physics update & smooth movement integration (ZERO allocations)
   useFrame((_, delta) => {
     if (currentMode !== 'FIRST_PERSON') return;
 
@@ -183,8 +190,8 @@ export default function Player({
     const dt = Math.min(delta, 0.05);
 
     // 1. Smooth Camera Look Angle Damping (Eliminates mouse stutter)
-    playerYaw.current = THREE.MathUtils.damp(playerYaw.current, targetYaw.current, 20.0, dt);
-    playerPitch.current = THREE.MathUtils.damp(playerPitch.current, targetPitch.current, 20.0, dt);
+    playerYaw.current = THREE.MathUtils.damp(playerYaw.current, targetYaw.current, 22.0, dt);
+    playerPitch.current = THREE.MathUtils.damp(playerPitch.current, targetPitch.current, 22.0, dt);
 
     // 2. Compute Desired Input Vector
     const moveZ =
@@ -208,38 +215,43 @@ export default function Player({
     }
 
     // 3. Smooth Acceleration / Deceleration Damping
-    const accelRate = inputLen > 0.05 ? 12.0 : 15.0; // Responsive acceleration, smooth friction stop
+    const accelRate = inputLen > 0.05 ? 14.0 : 16.0; // Responsive acceleration, smooth friction stop
     velocity.current.x = THREE.MathUtils.damp(velocity.current.x, targetVelX, accelRate, dt);
     velocity.current.y = THREE.MathUtils.damp(velocity.current.y, targetVelZ, accelRate, dt);
 
-    // 4. Integrate Velocity into World Position with Yaw Rotation
+    // 4. Integrate Velocity into World Position with Yaw Rotation (Zero allocations!)
     const currentSpeedSq = velocity.current.lengthSq();
     if (currentSpeedSq > 0.0001) {
-      const moveVec = new THREE.Vector3(velocity.current.x * dt, 0, velocity.current.y * dt);
-      // Rotate movement by player's horizontal yaw
-      moveVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw.current);
+      _moveVec.set(velocity.current.x * dt, 0, velocity.current.y * dt);
+      _moveVec.applyAxisAngle(_upAxis, playerYaw.current);
 
-      const targetPos = playerPos.current.clone().add(moveVec);
+      _targetPos.copy(playerPos.current).add(_moveVec);
 
       // Resolve collision with architectural walls and obstacle footprints
-      const correctedPos = collisionEngine.resolveMovement(playerPos.current, targetPos);
+      const correctedPos = collisionEngine.resolveMovement(playerPos.current, _targetPos);
       playerPos.current.copy(correctedPos);
     }
 
     // 5. Synchronize Camera with Player Position and Look Angles
     camera.position.copy(playerPos.current);
 
-    const forward = new THREE.Vector3(0, 0, -1);
-    forward.applyAxisAngle(new THREE.Vector3(1, 0, 0), playerPitch.current);
-    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw.current);
+    _forward.set(0, 0, -1);
+    _forward.applyAxisAngle(_pitchAxis, playerPitch.current);
+    _forward.applyAxisAngle(_upAxis, playerYaw.current);
 
-    const lookTarget = playerPos.current.clone().add(forward);
-    camera.lookAt(lookTarget);
+    _lookTarget.copy(playerPos.current).add(_forward);
+    camera.lookAt(_lookTarget);
 
-    // 6. Throttled Position Broadcast to Minimap (10Hz) to prevent React state render thrashing
+    // 6. Throttled Position Broadcast to playerStore (15Hz) - ZERO React state re-renders!
     lastUpdateTimer.current += dt;
-    if (lastUpdateTimer.current >= 0.1) {
+    if (lastUpdateTimer.current >= 0.066) {
       lastUpdateTimer.current = 0;
+      playerStore.set({
+        x: playerPos.current.x,
+        z: playerPos.current.z,
+        yaw: playerYaw.current,
+        mode: currentMode
+      });
       if (onPositionUpdate) {
         onPositionUpdate({
           x: playerPos.current.x,

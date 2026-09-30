@@ -169,14 +169,14 @@ export const COLLISION_OBSTACLES = [
   { id: 'wall-bathroom-east', minX: 1.35, maxX: 1.65, minZ: -7.6, maxZ: -3.0 },
 
   // 8. Living Room Curated Large Furniture Footprints (Generous Walking Clearance)
-  // Sectional Boucle Sofa Main Body
-  { id: 'sofa-block-main', minX: -7.6, maxX: -4.8, minZ: 3.0, maxZ: 4.2 },
-  // Sectional Chaise Return
-  { id: 'sofa-block-chaise', minX: -7.8, maxX: -6.4, minZ: 1.6, maxZ: 3.0 },
-  // Sculptural Low Travertine Coffee Table
-  { id: 'coffee-table-block', minX: -5.7, maxX: -4.5, minZ: 1.8, maxZ: 2.6 },
+  // Sectional Boucle Sofa Main Body (Centered on X = -7.0m)
+  { id: 'sofa-block-main', minX: -8.9, maxX: -5.1, minZ: 3.6, maxZ: 4.8 },
+  // Sectional Chaise Return (West side)
+  { id: 'sofa-block-chaise', minX: -8.9, maxX: -7.8, minZ: 2.3, maxZ: 3.6 },
+  // Sculptural Low Travertine Coffee Table (Centered on X = -7.0m, Z = 2.6m)
+  { id: 'coffee-table-block', minX: -7.8, maxX: -5.8, minZ: 2.0, maxZ: 3.1 },
   // Acoustic Fluted Media Console base against North wall
-  { id: 'media-console-block', minX: -7.8, maxX: -4.4, minZ: -1.5, maxZ: -1.0 }
+  { id: 'media-console-block', minX: -8.6, maxX: -5.4, minZ: -1.5, maxZ: -1.0 }
 ];
 
 // Master walkable area limits

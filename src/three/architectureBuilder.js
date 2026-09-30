@@ -475,11 +475,9 @@ export function buildArchitecture(scene) {
   wallsGroup.add(createBox(1.5, 0.4, 0.15, materials.creamWall, [-3.75, 3.0, -1.5], 'ShowroomPassageHeaderLintel'));
 
   // Built-in Fluted Acoustic Media Feature Wall facing Living Room
-  // Dimensions: W: 4.8m, H: 2.8m, D: 0.05m at Z = -1.40m
-  const mediaSlatWall = createBox(4.8, 2.8, 0.05, materials.slatWall, [-7.15, 1.4, -1.4], 'LivingMediaSlatFeature');
-  // Cantilevered low stone plinth shelf under TV (W: 2.8m, H: 0.12m, D: 0.38m)
-  const mediaPlinthShelf = createBox(2.8, 0.12, 0.38, materials.stoneAccentWall, [-7.15, 0.3, -1.25], 'MediaPlinthShelf');
-  wallsGroup.add(mediaSlatWall, mediaPlinthShelf);
+  // Dimensions: W: 4.8m, H: 2.8m, D: 0.05m centered on X = -7.0m, Z = -1.40m
+  const mediaSlatWall = createBox(4.8, 2.8, 0.05, materials.slatWall, [-7.0, 1.4, -1.4], 'LivingMediaSlatFeature');
+  wallsGroup.add(mediaSlatWall);
 
   // C. Showroom Master Bed Acoustic Slat Feature Wall (Z = -7.68)
   const bedFeatureWall = createBox(4.2, 2.8, 0.06, materials.slatWall, [-6.0, 1.4, -7.68], 'BedAcousticFeatureSlat');
@@ -953,8 +951,9 @@ export function buildArchitecture(scene) {
 
   // B. Dropped Coffered Ceiling Soffits with Concealed Warm LED Light Coves
   // 1. Living Room Dropped Soffit (7.2m x 6.2m, Drop: 120mm at Y: 3.14m)
-  const livingSoffit = createBox(7.2, 0.12, 6.2, materials.ceiling, [-5.75, 3.14, 2.5], 'LivingCofferedSoffit');
-  const livingCove = createBox(7.4, 0.025, 6.4, materials.ceilingCoveGlow, [-5.75, 3.19, 2.5], 'LivingCoveLED', false, false);
+  // 1. Living Room Dropped Soffit (5.4m x 5.8m, Drop: 120mm centered on X = -7.0m, Z = 2.6m)
+  const livingSoffit = createBox(5.4, 0.12, 5.8, materials.ceiling, [-7.0, 3.14, 2.6], 'LivingCofferedSoffit');
+  const livingCove = createBox(5.6, 0.025, 6.0, materials.ceilingCoveGlow, [-7.0, 3.19, 2.6], 'LivingCoveLED', false, false);
   ceilingGroup.add(livingSoffit, livingCove);
 
   // 2. Dining Room Dropped Soffit (6.6m x 5.2m, Drop: 120mm at Y: 3.14m)
@@ -968,8 +967,8 @@ export function buildArchitecture(scene) {
   ceilingGroup.add(bedSoffit, bedCove);
 
   // C. Minimalist Continuous HVAC Linear Slot Diffusers (Black twin-slot)
-  // Living room diffuser
-  const hvacLiving = createBox(3.2, 0.02, 0.07, materials.hvacDiffuser, [-5.75, 3.07, 5.2], 'HVAC_Living');
+  // Living room diffuser (Centered on X = -7.0m)
+  const hvacLiving = createBox(3.2, 0.02, 0.07, materials.hvacDiffuser, [-7.0, 3.07, 5.2], 'HVAC_Living');
   // Dining room diffuser
   const hvacDining = createBox(3.0, 0.02, 0.07, materials.hvacDiffuser, [5.75, 3.07, 6.0], 'HVAC_Dining');
   // Kitchen ceiling slot diffuser
@@ -993,8 +992,8 @@ export function buildArchitecture(scene) {
   const spotCoordinates = [
     // Entrance Foyer
     [0.0, 3.5], [0.0, 4.8],
-    // Living Room Grid
-    [-4.0, 1.2], [-4.0, 3.8], [-7.5, 1.2], [-7.5, 3.8],
+    // Living Room Grid (Centered around X = -7.0m, Z = 2.6m)
+    [-5.2, 1.2], [-5.2, 4.0], [-8.8, 1.2], [-8.8, 4.0], [-7.0, 2.6],
     // Dining Room Grid
     [4.2, 2.5], [7.2, 2.5], [4.2, 5.0], [7.2, 5.0],
     // Kitchen Grid

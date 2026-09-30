@@ -26,7 +26,7 @@ interface ShowroomOverlayProps {
   onToggleNight: () => void;
   showCeiling: boolean;
   onToggleCeiling: () => void;
-  playerPosition: { x: number; z: number; yaw: number };
+  playerPosition?: { x: number; z: number; yaw: number };
   onJoystickMove?: (vector: { x: number; y: number }) => void;
   doorState?: { isNear: boolean; isOpen: boolean };
   onToggleDoor?: () => void;
