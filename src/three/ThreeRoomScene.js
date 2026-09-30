@@ -50,7 +50,8 @@ export class ThreeRoomScene {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
-    this.clock = new THREE.Clock();
+    this.lastTime = performance.now();
+    this.startTime = performance.now();
     this.isRunning = true;
 
     this.init();
@@ -80,7 +81,7 @@ export class ThreeRoomScene {
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -518,8 +519,10 @@ export class ThreeRoomScene {
     if (!this.isRunning) return;
     requestAnimationFrame(this.animate);
 
-    const delta = Math.min(this.clock.getDelta(), 0.1);
-    const elapsedTime = this.clock.getElapsedTime();
+    const now = performance.now();
+    const delta = Math.min((now - this.lastTime) / 1000, 0.1);
+    this.lastTime = now;
+    const elapsedTime = (now - this.startTime) / 1000;
 
     // 1. Camera interpolation animation
     if (this.animatingCamera) {

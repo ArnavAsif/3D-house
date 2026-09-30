@@ -128,24 +128,29 @@ export const COLLISION_OBSTACLES = [
   // Outer perimeter boundary walls:
   { id: 'wall-north-solid-left', minX: -10.0, maxX: -2.0, minZ: -8.0, maxZ: -7.6 },
   { id: 'wall-north-solid-right', minX: 1.5, maxX: 6.0, minZ: -8.0, maxZ: -7.6 },
-  { id: 'wall-south-left', minX: -10.0, maxX: -1.8, minZ: 6.2, maxZ: 6.6 },
-  { id: 'wall-south-right', minX: 1.8, maxX: 10.0, minZ: 6.2, maxZ: 6.6 },
-  { id: 'wall-west', minX: -9.9, maxX: -9.5, minZ: -8.0, maxZ: 6.5 },
-  { id: 'wall-east', minX: 9.5, maxX: 9.9, minZ: -8.0, maxZ: 6.5 },
+  { id: 'wall-south-left', minX: -10.0, maxX: -0.9, minZ: 6.18, maxZ: 6.55 },
+  { id: 'wall-south-right', minX: 0.9, maxX: 10.0, minZ: 6.18, maxZ: 6.55 },
+  { id: 'wall-west', minX: -10.0, maxX: -9.6, minZ: -8.0, maxZ: 6.5 },
+  { id: 'wall-east', minX: 9.6, maxX: 10.0, minZ: -8.0, maxZ: 6.5 },
+
+  // Architectural Columns:
+  { id: 'column-central', minX: -0.22, maxX: 0.22, minZ: 1.28, maxZ: 1.72 },
+  { id: 'column-portico-left', minX: -2.65, maxX: -2.15, minZ: 7.55, maxZ: 8.05 },
+  { id: 'column-portico-right', minX: 2.15, maxX: 2.65, minZ: 7.55, maxZ: 8.05 },
 
   // Interior partition walls:
-  // Bathroom walls (box: X: -2.0 to 1.5, Z: -7.6 to -3.0):
-  { id: 'wall-bath-west', minX: -2.0, maxX: -1.75, minZ: -7.6, maxZ: -3.0 },
-  { id: 'wall-bath-east', minX: 1.35, maxX: 1.6, minZ: -7.6, maxZ: -3.0 },
-  { id: 'wall-bath-south-left', minX: -2.0, maxX: -0.6, minZ: -3.15, maxZ: -2.9 },
-  { id: 'wall-bath-south-right', minX: 0.6, maxX: 1.6, minZ: -3.15, maxZ: -2.9 }, // door in middle: -0.6 to 0.6
+  // Bathroom walls (box: X: -2.0 to 1.5, Z: -7.7 to -3.0):
+  { id: 'wall-bath-west', minX: -2.0, maxX: -1.8, minZ: -7.7, maxZ: -3.0 },
+  { id: 'wall-bath-east', minX: 1.35, maxX: 1.55, minZ: -7.7, maxZ: -3.0 },
+  { id: 'wall-bath-south-left', minX: -2.0, maxX: -0.5, minZ: -3.15, maxZ: -2.85 },
+  { id: 'wall-bath-south-right', minX: 0.5, maxX: 1.55, minZ: -3.15, maxZ: -2.85 }, // door opening: -0.5 to 0.5
 
   // Living Room / Bedroom Divider wall (partial with opening):
-  { id: 'wall-bed-living-part1', minX: -9.5, maxX: -5.0, minZ: -1.65, maxZ: -1.4 },
-  { id: 'wall-bed-living-part2', minX: -3.0, maxX: -1.75, minZ: -1.65, maxZ: -1.4 }, // door opening: -5.0 to -3.0
+  { id: 'wall-bed-living-part1', minX: -9.85, maxX: -4.5, minZ: -1.65, maxZ: -1.35 },
+  { id: 'wall-bed-living-part2', minX: -3.0, maxX: -2.0, minZ: -1.65, maxZ: -1.35 }, // passage opening: -4.5 to -3.0
 
   // Kitchen rear cabinetry block:
-  { id: 'cabinetry-kitchen-back', minX: 1.6, maxX: 6.0, minZ: -7.6, maxZ: -6.8 },
+  { id: 'cabinetry-kitchen-back', minX: 6.0, maxX: 9.85, minZ: -7.85, maxZ: -7.0 },
 
   // Kitchen Island:
   { id: 'island-block', minX: 4.2, maxX: 7.4, minZ: -2.4, maxZ: -1.2 },
@@ -168,3 +173,4 @@ export const WALK_LIMITS = {
   minZ: -10.5,
   maxZ: 8.8
 };
+
