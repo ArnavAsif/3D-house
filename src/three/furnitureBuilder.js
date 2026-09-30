@@ -232,12 +232,23 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
     return mesh;
   };
 
-  // Strictly attaches ONLY decoupled unique ID `productId` to 3D geometry
-  const tagInteractive = (meshOrGroup, productId) => {
+  // Attaches database product ID to 3D geometry; 3D model represents only visual object
+  const tagInteractive = (meshOrGroup, slotId) => {
+    let dbProductId = slotId;
+    if (productsCatalog && Array.isArray(productsCatalog)) {
+      const matched = productsCatalog.find(
+        (p) => p.showroomId === slotId || p.id === slotId || p.slotId === slotId
+      );
+      if (matched) {
+        dbProductId = matched.productId || matched.dbId || matched.id || slotId;
+      }
+    }
+
     meshOrGroup.traverse((child) => {
       if (child.isMesh) {
         child.userData = {
-          productId,
+          productId: dbProductId,
+          showroomId: slotId,
           isInteractive: true,
           originalMaterial: child.material
         };

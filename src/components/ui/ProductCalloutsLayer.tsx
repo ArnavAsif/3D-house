@@ -8,7 +8,7 @@ import { ShowroomSpatialPosition } from '@/types/showroom';
 
 /**
  * InteractiveTapIcon
- * Hand cursor icon with radiating tap lines, matching the ChatGPT reference image.
+ * Hand cursor icon with radiating tap lines, matching reference design.
  */
 function InteractiveTapIcon() {
   return (
@@ -45,25 +45,27 @@ function ProductCalloutItem({
   onHover
 }: ProductCalloutItemProps) {
   const [productData, setProductData] = useState<Product | null>(null);
+  const targetId = target.productId || target.showroomId;
 
   useEffect(() => {
     productService
-      .getProduct(target.showroomId)
+      .getProduct(targetId)
       .then((p) => {
         if (p) setProductData(p);
       })
       .catch(() => {});
-  }, [target.showroomId]);
+  }, [targetId]);
 
   return (
     <div
       id={`pin-callout-${target.showroomId}`}
+      data-product-id={target.productId}
       className={`product-pin-callout ${isHovered ? 'hovered' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect(target.showroomId);
+        onSelect(targetId);
       }}
-      onMouseEnter={() => onHover(target.showroomId)}
+      onMouseEnter={() => onHover(targetId)}
       onMouseLeave={() => onHover(null)}
       style={{
         position: 'absolute',
@@ -106,6 +108,7 @@ interface ProductCalloutsLayerProps {
   hoveredProductId: string | null;
   onSelectProduct: (id: string) => void;
   onHoverProduct: (id: string | null) => void;
+  targets?: ShowroomSpatialPosition[];
 }
 
 /**
@@ -116,9 +119,11 @@ interface ProductCalloutsLayerProps {
 export default function ProductCalloutsLayer({
   hoveredProductId,
   onSelectProduct,
-  onHoverProduct
+  onHoverProduct,
+  targets: propTargets
 }: ProductCalloutsLayerProps) {
-  const targets = useMemo(() => positioningService.getAllPositions(), []);
+  const defaultTargets = useMemo(() => positioningService.getAllPositions(), []);
+  const targets = propTargets && propTargets.length > 0 ? propTargets : defaultTargets;
 
   return (
     <div
@@ -138,7 +143,10 @@ export default function ProductCalloutsLayer({
         <ProductCalloutItem
           key={target.showroomId}
           target={target}
-          isHovered={hoveredProductId === target.showroomId}
+          isHovered={
+            hoveredProductId === target.showroomId ||
+            hoveredProductId === target.productId
+          }
           onSelect={onSelectProduct}
           onHover={onHoverProduct}
         />

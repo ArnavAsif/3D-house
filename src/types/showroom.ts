@@ -1,5 +1,7 @@
 // Showroom 3D Spatial Layout & Database Types (Supabase PostgreSQL)
 
+import { Product } from './product';
+
 export type ShowroomPlacementType =
   | 'Furniture Floor Zone'
   | 'On Display Table'
@@ -33,10 +35,28 @@ export interface ShowroomProductRecord {
 }
 
 /**
+ * Connected 3D Showroom Item with complete Supabase product details:
+ * Supabase -> showroom_products -> product_id -> products -> product_variants & product_images & inventory
+ */
+export interface ShowroomProductWithDetails {
+  id: string; // showroom_products UUID
+  productId: string; // products UUID
+  showroomId: string; // e.g. 'product-01'
+  modelUrl?: string | null;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale: [number, number, number];
+  interactionRadius: number;
+  isActive: boolean;
+  product: Product;
+}
+
+/**
  * Spatial positioning used by Three.js runtime.
  */
 export interface ShowroomSpatialPosition {
   showroomId: string; // e.g. 'product-01'
+  productId?: string; // Supabase database product UUID
   position: [number, number, number];
   rotation?: [number, number, number];
   scale?: [number, number, number];
@@ -45,6 +65,7 @@ export interface ShowroomSpatialPosition {
   room: string;
   displayZone: string;
   placementType: ShowroomPlacementType;
+  modelUrl?: string | null;
 }
 
 export interface RoomDefinition {

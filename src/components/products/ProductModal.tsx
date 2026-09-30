@@ -119,6 +119,45 @@ export default function ProductModal({
           </div>
         </div>
 
+        {/* Product Images Gallery from Supabase */}
+        {productData.images && productData.images.length > 0 && (
+          <div
+            className="modal-gallery-row"
+            style={{
+              display: 'flex',
+              gap: '8px',
+              margin: '12px 0 16px',
+              overflowX: 'auto',
+              paddingBottom: '4px'
+            }}
+          >
+            {productData.images.map((img) => (
+              <div
+                key={img.id}
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(212, 175, 55, 0.25)',
+                  flexShrink: 0
+                }}
+              >
+                <img
+                  src={img.imageUrl}
+                  alt={img.altText || productData.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    const parent = (e.target as HTMLElement).parentElement;
+                    if (parent) parent.style.display = 'none';
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         <p className="modal-description">{productData.description}</p>
 
         {/* Modular Variant Selector */}

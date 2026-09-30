@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect, Suspense } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { positioningService } from '@/lib/showroom/positioningService';
 import { ProductVariant } from '@/types/product';
-import { ShowroomSpatialPosition } from '@/types/showroom';
+import { ShowroomSpatialPosition, ShowroomProductWithDetails } from '@/types/showroom';
 
 interface GLTFProductLoaderProps {
   url: string;
@@ -28,26 +28,31 @@ export function GLTFProductLoader({
   scale = [1, 1, 1],
   productId
 }: GLTFProductLoaderProps) {
-  const { scene } = useGLTF(url);
-  const cloned = scene.clone();
+  try {
+    const { scene } = useGLTF(url);
+    const cloned = scene.clone();
 
-  cloned.traverse((node) => {
-    if ((node as THREE.Mesh).isMesh) {
-      node.castShadow = true;
-      node.receiveShadow = true;
-      node.userData.productId = productId;
-    }
-  });
+    cloned.traverse((node) => {
+      if ((node as THREE.Mesh).isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+        node.userData.productId = productId;
+      }
+    });
 
-  return (
-    <primitive
-      object={cloned}
-      position={position}
-      rotation={rotation}
-      scale={scale}
-      userData={{ productId }}
-    />
-  );
+    return (
+      <primitive
+        object={cloned}
+        position={position}
+        rotation={rotation}
+        scale={scale}
+        userData={{ productId }}
+      />
+    );
+  } catch (err) {
+    // Graceful fallback if GLTF file isn't physically available on disk/network yet
+    return null;
+  }
 }
 
 /**
@@ -114,6 +119,7 @@ interface ProductPinIndicatorProps {
  */
 function ProductPinIndicator({ target, isHovered, onClick }: ProductPinIndicatorProps) {
   const pinGroupRef = useRef<THREE.Group>(null);
+  const targetId = target.productId || target.showroomId;
 
   useFrame(({ clock }) => {
     if (pinGroupRef.current) {
@@ -143,9 +149,9 @@ function ProductPinIndicator({ target, isHovered, onClick }: ProductPinIndicator
       ]}
       onClick={(e) => {
         e.stopPropagation();
-        onClick(target.showroomId);
+        onClick(targetId);
       }}
-      userData={{ isHotspot: true, productId: target.showroomId }}
+      userData={{ isHotspot: true, productId: targetId, showroomId: target.showroomId }}
     >
       {/* 1. Concentric Ripple Rings on Surface */}
       <SurfaceRipples />
@@ -202,14 +208,17 @@ function ProductPinIndicator({ target, isHovered, onClick }: ProductPinIndicator
  * Projects 3D pin locations to 2D viewport coordinates and updates DOM callouts
  * via hardware-accelerated translate3d at full 60fps with ZERO React 19 re-renders.
  */
-export function PinScreenTracker() {
+export function PinScreenTracker({ targets: propTargets }: { targets?: ShowroomSpatialPosition[] }) {
   const { camera, size } = useThree();
-  const targets = useMemo(() => positioningService.getAllPositions(), []);
+  const defaultTargets = useMemo(() => positioningService.getAllPositions(), []);
+  const targets = propTargets && propTargets.length > 0 ? propTargets : defaultTargets;
   const tempVec = useRef(new THREE.Vector3());
 
   useFrame(() => {
     for (const target of targets) {
-      const el = document.getElementById(`pin-callout-${target.showroomId}`);
+      const el =
+        document.getElementById(`pin-callout-${target.showroomId}`) ||
+        (target.productId ? document.getElementById(`pin-callout-${target.productId}`) : null);
       if (!el) continue;
 
       tempVec.current.set(
@@ -251,22 +260,43 @@ interface ProductsProps {
   onProductClick: (id: string) => void;
   activeVariant?: ProductVariant | null;
   sceneFurnitureGroup?: THREE.Group | null;
+  showroomProducts?: ShowroomProductWithDetails[];
 }
 
 /**
  * Products
- * Modular component managing interactive product zones, dynamic variant updates,
- * and asynchronous 3D GLTF asset loading with Suspense.
- * Driven by the positioningService data layer.
+ * Modular component connecting Supabase showroom products to 3D rendering.
+ * 3D models only represent visual objects; product information remains in Supabase.
+ * Attaches database product IDs to 3D objects and supports dynamic GLTF loading.
  */
 export default function Products({
   activeProductId,
   hoveredProductId,
   onProductClick,
   activeVariant,
-  sceneFurnitureGroup
+  sceneFurnitureGroup,
+  showroomProducts
 }: ProductsProps) {
-  const targets = positioningService.getAllPositions();
+  const defaultTargets = useMemo(() => positioningService.getAllPositions(), []);
+
+  const targets = useMemo(() => {
+    if (showroomProducts && showroomProducts.length > 0) {
+      return showroomProducts.map((sp) => ({
+        showroomId: sp.showroomId,
+        productId: sp.productId,
+        position: sp.position,
+        rotation: sp.rotation,
+        scale: sp.scale,
+        hotspotOffset: [0, 0.85, 0] as [number, number, number],
+        clearanceRadiusM: sp.interactionRadius,
+        room: sp.product.room,
+        displayZone: sp.product.displayZone,
+        placementType: sp.product.placementType as any,
+        modelUrl: sp.modelUrl
+      }));
+    }
+    return defaultTargets;
+  }, [showroomProducts, defaultTargets]);
 
   // Update 3D mesh material dynamically when variant changes
   useEffect(() => {
@@ -277,7 +307,11 @@ export default function Products({
 
     sceneFurnitureGroup.traverse((node) => {
       const mesh = node as THREE.Mesh;
-      if (mesh.isMesh && mesh.userData && mesh.userData.productId === activeProductId) {
+      if (
+        mesh.isMesh &&
+        mesh.userData &&
+        (mesh.userData.productId === activeProductId || mesh.userData.showroomId === activeProductId)
+      ) {
         if (mesh.material && !mesh.userData.isHotspot) {
           if (Array.isArray(mesh.material)) {
             mesh.material.forEach((m) => {
@@ -308,14 +342,32 @@ export default function Products({
   return (
     <group name="interactive-product-zones">
       {/* 60fps Hardware Screen Tracker for 2D Callouts */}
-      <PinScreenTracker />
+      <PinScreenTracker targets={targets} />
+
+      {/* External GLTF/GLB Models Asynchronously Loaded from Supabase Storage */}
+      {targets
+        .filter((t) => t.modelUrl && (t.modelUrl.endsWith('.glb') || t.modelUrl.endsWith('.gltf')))
+        .map((target) => (
+          <Suspense key={`gltf-${target.productId || target.showroomId}`} fallback={null}>
+            <GLTFProductLoader
+              url={target.modelUrl!}
+              position={target.position}
+              rotation={target.rotation}
+              scale={target.scale}
+              productId={target.productId || target.showroomId}
+            />
+          </Suspense>
+        ))}
 
       {/* Modern Red Pushpin Indicators with Surface Waves */}
       {targets.map((target) => (
         <ProductPinIndicator
           key={target.showroomId}
           target={target}
-          isHovered={hoveredProductId === target.showroomId}
+          isHovered={
+            hoveredProductId === target.showroomId ||
+            hoveredProductId === target.productId
+          }
           onClick={onProductClick}
         />
       ))}

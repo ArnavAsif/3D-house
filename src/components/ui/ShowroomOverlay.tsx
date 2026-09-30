@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Compass,
   Eye,
@@ -23,7 +23,10 @@ import ProductCalloutsLayer from './ProductCalloutsLayer';
 import { CartItem } from '@/types/cart';
 import { Product, ProductVariant } from '@/types/product';
 
+import { ShowroomProductWithDetails } from '@/types/showroom';
+
 interface ShowroomOverlayProps {
+  showroomProducts?: ShowroomProductWithDetails[];
   activeProductId: string | null;
   hoveredProductId: string | null;
   onCloseProduct: () => void;
@@ -47,6 +50,7 @@ interface ShowroomOverlayProps {
  * room jumper, modal displays, and Supabase-backed cart drawer.
  */
 export default function ShowroomOverlay({
+  showroomProducts,
   activeProductId,
   hoveredProductId,
   onCloseProduct,
@@ -70,6 +74,25 @@ export default function ShowroomOverlay({
   const [hoveredProductName, setHoveredProductName] = useState<string>('Product');
 
   const rooms = positioningService.getRooms();
+
+  const spatialTargets = useMemo(() => {
+    if (showroomProducts && showroomProducts.length > 0) {
+      return showroomProducts.map((sp) => ({
+        showroomId: sp.showroomId,
+        productId: sp.productId,
+        position: sp.position,
+        rotation: sp.rotation,
+        scale: sp.scale,
+        hotspotOffset: [0, 0.85, 0] as [number, number, number],
+        clearanceRadiusM: sp.interactionRadius,
+        room: sp.product.room,
+        displayZone: sp.product.displayZone,
+        placementType: sp.product.placementType as any,
+        modelUrl: sp.modelUrl
+      }));
+    }
+    return positioningService.getAllPositions();
+  }, [showroomProducts]);
 
   // Hide controls hint after 9s
   useEffect(() => {
@@ -222,6 +245,7 @@ export default function ShowroomOverlay({
         hoveredProductId={hoveredProductId}
         onSelectProduct={onSelectProduct}
         onHoverProduct={onHoverProduct || (() => {})}
+        targets={spatialTargets}
       />
 
       {/* 2. CONTROLS GUIDE OVERLAY */}

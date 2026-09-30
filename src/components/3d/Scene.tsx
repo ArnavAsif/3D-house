@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import PerformanceManager from './PerformanceManager';
 import Environment from './Environment';
@@ -15,7 +15,9 @@ import ProductInteraction from './ProductInteraction';
 import LoadingScreen from './LoadingScreen';
 import ShowroomOverlay from '@/components/ui/ShowroomOverlay';
 import { positioningService } from '@/lib/showroom/positioningService';
+import { showroomService } from '@/lib/showroom/showroomService';
 import { ProductVariant } from '@/types/product';
+import { ShowroomProductWithDetails } from '@/types/showroom';
 import * as THREE from 'three';
 
 /**
@@ -38,6 +40,9 @@ function CanvasReadyNotifier({ onReady }: { onReady: () => void }) {
  * Master React Three Fiber WebGL Showroom component.
  * Integrates modular components for Architecture, Furniture, Products,
  * Lighting, CollisionSystem, Camera, Player, and UI HUD.
+ *
+ * Fully connected to Supabase:
+ * Supabase -> showroom_products -> product_id -> products -> product_variants & product_images & inventory
  */
 export default function Scene() {
   const [sceneReady, setSceneReady] = useState(false);
@@ -52,6 +57,16 @@ export default function Scene() {
   const [joystickVector, setJoystickVector] = useState({ x: 0, y: 0 });
 
   const [furnitureGroup, setFurnitureGroup] = useState<THREE.Group | null>(null);
+  const [showroomProducts, setShowroomProducts] = useState<ShowroomProductWithDetails[]>([]);
+
+  // 1. Fetch active showroom products from Supabase on showroom load
+  useEffect(() => {
+    showroomService.fetchShowroomProducts().then((items) => {
+      if (items && items.length > 0) {
+        setShowroomProducts(items);
+      }
+    });
+  }, []);
 
   const handleRegisterInteractives = ({ group }: { group: THREE.Group }) => {
     setFurnitureGroup(group);
@@ -124,11 +139,15 @@ export default function Scene() {
             {/* Complete Structural Architectural Shell */}
             <Architecture showCeiling={showCeiling} />
 
-            {/* Curated Luxury Furniture & Fixtures */}
-            <Furniture onRegisterInteractives={handleRegisterInteractives} />
+            {/* Curated Luxury Furniture & Visual 3D Meshes tagged with Supabase product IDs */}
+            <Furniture
+              products={showroomProducts}
+              onRegisterInteractives={handleRegisterInteractives}
+            />
 
-            {/* Decoupled Interactive Product Zones & Hotspots */}
+            {/* Decoupled Interactive Product Zones, GLTF loader & Navigation Pins */}
             <Products
+              showroomProducts={showroomProducts}
               activeProductId={activeProductId}
               hoveredProductId={hoveredProductId}
               onProductClick={(id) => setActiveProductId(id)}
@@ -162,6 +181,7 @@ export default function Scene() {
 
       {/* 3. Luxury UI & HUD Overlay */}
       <ShowroomOverlay
+        showroomProducts={showroomProducts}
         activeProductId={activeProductId}
         hoveredProductId={hoveredProductId}
         onCloseProduct={() => setActiveProductId(null)}
