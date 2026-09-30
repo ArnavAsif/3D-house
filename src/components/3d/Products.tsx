@@ -29,7 +29,11 @@ export function GLTFProductLoader({
   productId
 }: GLTFProductLoaderProps) {
   try {
-    const { scene } = useGLTF(url);
+    const { scene } = useLoader(GLTFLoader, url, (loader) => {
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('/draco/');
+  loader.setDRACOLoader(dracoLoader);
+});
     const cloned = scene.clone();
 
     cloned.traverse((node) => {

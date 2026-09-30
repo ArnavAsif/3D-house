@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import * as THREE from 'three';
+import { getQualityProfile } from '@/lib/optimization/qualityService';
 
 interface LightingProps {
   isNight?: boolean;
