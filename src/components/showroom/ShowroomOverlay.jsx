@@ -308,7 +308,7 @@ export default function ShowroomOverlay({
         onJoystickMove={onJoystickMove}
       />
 
-      {/* 6. DYNAMIC SHOPIFY PRODUCT DETAIL MODAL */}
+      {/* 6. DYNAMIC SUPABASE COMMERCE PRODUCT DETAIL MODAL */}
       <ProductModal
         productId={activeProductId}
         onClose={onCloseProduct}
@@ -316,7 +316,7 @@ export default function ShowroomOverlay({
         onVariantChange={onVariantChange}
       />
 
-      {/* 7. SHOPIFY SHOPPING CART DRAWER */}
+      {/* 7. CUSTOM COMMERCE SHOPPING CART DRAWER */}
       <Cart
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
@@ -381,7 +381,7 @@ export default function ShowroomOverlay({
                 </p>
                 <p>
                   <strong>Decoupling:</strong> Meshes carry only IDs (`product-XX`) for dynamic
-                  Shopify API hydration.
+                  Next.js + Supabase hydration.
                 </p>
               </div>
             </div>

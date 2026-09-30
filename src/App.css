@@ -589,6 +589,7 @@ body, html {
   border: 1px solid #eae5dc;
 }
 
+.commerce-synced-pill,
 .shopify-synced-pill {
   display: inline-flex;
   align-items: center;
@@ -605,6 +606,7 @@ body, html {
   letter-spacing: 0.6px;
 }
 
+.commerce-synced-pill::before,
 .shopify-synced-pill::before {
   content: '';
   display: inline-block;

@@ -3,7 +3,7 @@ import './globals.css';
 export const metadata = {
   title: 'Villa Lumina | 3D Luxury Architectural Showroom',
   description:
-    'Interactive 3D modern luxury showroom residence rendered with React Three Fiber, Three.js, and dynamic Shopify Storefront integration.'
+    'Interactive 3D modern luxury showroom residence rendered with React Three Fiber, Three.js, and custom Next.js + Supabase Commerce backend.'
 };
 
 export default function RootLayout({ children }) {

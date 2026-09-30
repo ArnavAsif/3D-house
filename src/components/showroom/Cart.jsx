@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShoppingCart, X, Check } from 'lucide-react';
-import { shopifyService } from '../../services/shopifyService';
+import { ShoppingCart, X, Check, ShieldCheck, PackageCheck } from 'lucide-react';
+import { commerceService } from '../../services/commerceService';
 
 /**
  * Cart
- * Showroom cart drawer integrated with Shopify Storefront Cart API.
- * Calculates line items and creates dynamic checkout sessions.
+ * Showroom cart drawer integrated with custom Next.js + Supabase Commerce backend.
+ * Calculates line items and executes order placement against Supabase PostgreSQL.
  */
 export default function Cart({
   isOpen,
@@ -16,7 +16,7 @@ export default function Cart({
   onRemoveItem
 }) {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [checkoutInfo, setCheckoutInfo] = useState(null);
+  const [orderInfo, setOrderInfo] = useState(null);
 
   if (!isOpen) return null;
 
@@ -31,15 +31,17 @@ export default function Cart({
     setIsCheckingOut(true);
     try {
       const lineItems = items.map((item) => ({
-        id: item.variant?.id || `gid://shopify/ProductVariant/${item.product.id || item.product.showroomId}`,
-        title: `${item.product.title || item.product.name} - ${item.variant?.title || item.variant?.name}`,
+        productId: item.product.id || item.product.showroomId,
+        variantId: item.variant?.id || `var-${item.product.id}`,
+        product: item.product,
+        variant: item.variant,
         price: item.product.price,
         quantity: item.quantity
       }));
-      const cartResult = await shopifyService.createCart(lineItems);
-      setCheckoutInfo(cartResult);
+      const orderResult = await commerceService.createOrder(lineItems);
+      setOrderInfo(orderResult);
     } catch (err) {
-      console.error('Failed to create Shopify cart:', err);
+      console.error('Failed to create custom order:', err);
     } finally {
       setIsCheckingOut(false);
     }
@@ -114,45 +116,47 @@ export default function Cart({
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
               >
-                {isCheckingOut ? 'Creating Shopify Cart...' : 'Proceed to Checkout'}
+                {isCheckingOut ? 'Submitting to Supabase Backend...' : 'Proceed to Checkout'}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Dynamic Shopify Storefront Checkout Confirmation */}
-      {checkoutInfo && (
-        <div className="product-modal-backdrop" onClick={() => setCheckoutInfo(null)}>
+      {/* Dynamic Supabase Commerce Order Confirmation Modal */}
+      {orderInfo && (
+        <div className="product-modal-backdrop" onClick={() => setOrderInfo(null)}>
           <div className="product-card-modal checkout-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setCheckoutInfo(null)}>
+            <button className="modal-close-btn" onClick={() => setOrderInfo(null)}>
               <X size={18} />
             </button>
             <div className="product-modal-header">
               <div className="modal-badge-row">
-                <span className="shopify-synced-pill">Shopify Storefront Connected</span>
+                <span className="shopify-synced-pill" style={{ background: '#eaf4ed', color: '#276738' }}>
+                  Supabase Order Confirmed
+                </span>
               </div>
-              <h2 className="modal-product-title">Shopify Cart Generated</h2>
+              <h2 className="modal-product-title">Order {orderInfo.orderNumber}</h2>
               <p className="modal-description" style={{ marginTop: '8px', marginBottom: '16px' }}>
-                Your selected 3D products have been packaged into a Shopify Storefront cart instance ready for checkout.
+                Your bespoke showroom selection has been recorded in Supabase PostgreSQL and sent to fulfillment.
               </p>
             </div>
 
             <div className="modal-specs-grid" style={{ gridTemplateColumns: '1fr', gap: '8px' }}>
               <div className="spec-item">
-                <span className="spec-title">Cart GID</span>
-                <span className="spec-value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                  {checkoutInfo.id}
+                <span className="spec-title">Order Reference</span>
+                <span className="spec-value" style={{ fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--color-walnut)', fontWeight: 700 }}>
+                  {orderInfo.orderNumber}
                 </span>
               </div>
               <div className="spec-item">
-                <span className="spec-title">Storefront Endpoint</span>
-                <span className="spec-value">https://villa-lumina.myshopify.com/api/2025-01/graphql</span>
+                <span className="spec-title">Fulfillment Routing</span>
+                <span className="spec-value">Direct Atelier White Glove White Glove Dispatch</span>
               </div>
               <div className="spec-item">
-                <span className="spec-title">Subtotal Amount</span>
+                <span className="spec-title">Order Total</span>
                 <span className="spec-value" style={{ fontWeight: 700, color: 'var(--color-walnut)' }}>
-                  ${checkoutInfo.cost?.subtotalAmount?.amount} USD
+                  ${orderInfo.total} USD
                 </span>
               </div>
             </div>
@@ -162,12 +166,12 @@ export default function Cart({
                 className="add-to-cart-btn"
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => {
-                  alert(`Navigating to mock Shopify checkout URL:\n${checkoutInfo.checkoutUrl}`);
-                  setCheckoutInfo(null);
+                  setOrderInfo(null);
                   onClose();
                 }}
               >
-                Launch Shopify Checkout (${checkoutInfo.cost?.subtotalAmount?.amount})
+                <PackageCheck size={18} style={{ marginRight: 6 }} />
+                <span>Return to Residence</span>
               </button>
             </div>
           </div>

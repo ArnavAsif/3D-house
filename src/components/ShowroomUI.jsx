@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { ROOMS_DATA, ARCHITECTURAL_SPECS } from '../data/roomData';
 import { SHOWROOM_PRODUCTS } from '../data/showroomProducts';
-import { shopifyService } from '../services/shopifyService';
+import { commerceService } from '../services/commerceService';
 
 export default function ShowroomUI({
   activeProduct,
@@ -46,9 +46,9 @@ export default function ShowroomUI({
   const [quantity, setQuantity] = useState(1);
   const [addedAnimation, setAddedAnimation] = useState(false);
 
-  // Shopify Storefront dynamic data state
-  const [shopifyData, setShopifyData] = useState(null);
-  const [isShopifyLoading, setIsShopifyLoading] = useState(false);
+  // Custom Commerce dynamic data state
+  const [commerceData, setCommerceData] = useState(null);
+  const [isCommerceLoading, setIsCommerceLoading] = useState(false);
   const [checkoutInfo, setCheckoutInfo] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -61,21 +61,21 @@ export default function ShowroomUI({
   const [joystickActive, setJoystickActive] = useState(false);
   const [joystickKnobPos, setJoystickKnobPos] = useState({ x: 0, y: 0 });
 
-  // Dynamic asynchronous Shopify Storefront API query whenever activeProduct changes
+  // Dynamic asynchronous Commerce query whenever activeProduct changes
   useEffect(() => {
     if (!activeProduct) {
-      setShopifyData(null);
+      setCommerceData(null);
       return;
     }
 
     let isMounted = true;
-    setIsShopifyLoading(true);
+    setIsCommerceLoading(true);
 
-    shopifyService
+    commerceService
       .fetchProductByShowroomId(activeProduct.id)
       .then((data) => {
         if (isMounted) {
-          setShopifyData(data);
+          setCommerceData(data);
           if (data.variants && data.variants.length > 0) {
             setSelectedVariant(data.variants[0]);
           }
@@ -83,9 +83,9 @@ export default function ShowroomUI({
         }
       })
       .catch((err) => {
-        console.warn('Shopify sync fallback:', err);
+        console.warn('Commerce sync fallback:', err);
         if (isMounted) {
-          setShopifyData(activeProduct);
+          setCommerceData(activeProduct);
           if (activeProduct.variants && activeProduct.variants.length > 0) {
             setSelectedVariant(activeProduct.variants[0]);
           }
@@ -94,7 +94,7 @@ export default function ShowroomUI({
       })
       .finally(() => {
         if (isMounted) {
-          setIsShopifyLoading(false);
+          setIsCommerceLoading(false);
         }
       });
 
@@ -111,7 +111,7 @@ export default function ShowroomUI({
     return () => clearTimeout(timer);
   }, []);
 
-  const displayProduct = shopifyData || activeProduct;
+  const displayProduct = commerceData || activeProduct;
 
   const handleAddToCart = () => {
     if (!displayProduct) return;
@@ -149,15 +149,17 @@ export default function ShowroomUI({
     setIsCheckingOut(true);
     try {
       const lineItems = cart.map((item) => ({
-        id: item.variant?.id || `gid://shopify/ProductVariant/${item.product.id || item.product.showroomId}`,
-        title: `${item.product.title || item.product.name} - ${item.variant?.title || item.variant?.name}`,
+        productId: item.product.id || item.product.showroomId,
+        variantId: item.variant?.id || `var-${item.product.id}`,
+        product: item.product,
+        variant: item.variant,
         price: item.product.price,
         quantity: item.quantity
       }));
-      const cartResult = await shopifyService.createCart(lineItems);
-      setCheckoutInfo(cartResult);
+      const orderResult = await commerceService.createOrder(lineItems);
+      setCheckoutInfo(orderResult);
     } catch (err) {
-      console.error('Failed to create Shopify cart:', err);
+      console.error('Failed to create order:', err);
     } finally {
       setIsCheckingOut(false);
     }
@@ -477,9 +479,9 @@ export default function ShowroomUI({
                 </span>
                 <span
                   className="shopify-synced-pill"
-                  title={`Shopify GID: ${displayProduct.id || displayProduct.shopifyId}`}
+                  title={`Product ID: ${displayProduct.id}`}
                 >
-                  {isShopifyLoading ? 'Syncing...' : 'Shopify Synced'}
+                  {isCommerceLoading ? 'Syncing...' : 'Catalog Synced'}
                 </span>
               </div>
             </div>
@@ -636,7 +638,7 @@ export default function ShowroomUI({
                   onClick={handleCheckout}
                   disabled={isCheckingOut}
                 >
-                  {isCheckingOut ? 'Creating Shopify Cart...' : 'Proceed to Checkout'}
+                  {isCheckingOut ? 'Submitting Order...' : 'Proceed to Checkout'}
                 </button>
               </div>
             )}
@@ -644,7 +646,7 @@ export default function ShowroomUI({
         </div>
       )}
 
-      {/* 7b. SHOPIFY STOREFRONT CHECKOUT CONFIRMATION MODAL */}
+      {/* 7b. CUSTOM COMMERCE ORDER CONFIRMATION MODAL */}
       {checkoutInfo && (
         <div className="product-modal-backdrop" onClick={() => setCheckoutInfo(null)}>
           <div className="product-card-modal checkout-modal" onClick={(e) => e.stopPropagation()}>
@@ -653,29 +655,29 @@ export default function ShowroomUI({
             </button>
             <div className="product-modal-header">
               <div className="modal-badge-row">
-                <span className="shopify-synced-pill">Shopify Storefront Connected</span>
+                <span className="shopify-synced-pill">Custom Commerce Synced</span>
               </div>
-              <h2 className="modal-product-title">Shopify Cart Generated</h2>
+              <h2 className="modal-product-title">Order {checkoutInfo.orderNumber}</h2>
               <p className="modal-description" style={{ marginTop: '8px', marginBottom: '16px' }}>
-                Your selected 3D products have been packaged into a Shopify Storefront cart instance ready for checkout.
+                Your selected 3D products have been registered in Supabase PostgreSQL and sent to fulfillment.
               </p>
             </div>
 
             <div className="modal-specs-grid" style={{ gridTemplateColumns: '1fr', gap: '8px' }}>
               <div className="spec-item">
-                <span className="spec-title">Cart GID</span>
-                <span className="spec-value" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                  {checkoutInfo.id}
+                <span className="spec-title">Order Reference</span>
+                <span className="spec-value" style={{ fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-walnut)' }}>
+                  {checkoutInfo.orderNumber}
                 </span>
               </div>
               <div className="spec-item">
-                <span className="spec-title">Storefront Endpoint</span>
-                <span className="spec-value">https://villa-lumina.myshopify.com/api/2025-01/graphql</span>
+                <span className="spec-title">Database Storage</span>
+                <span className="spec-value">Supabase PostgreSQL orders table</span>
               </div>
               <div className="spec-item">
-                <span className="spec-title">Subtotal Amount</span>
+                <span className="spec-title">Total Amount</span>
                 <span className="spec-value" style={{ fontWeight: 700, color: 'var(--color-walnut)' }}>
-                  ${checkoutInfo.cost?.subtotalAmount?.amount} USD
+                  ${checkoutInfo.total} USD
                 </span>
               </div>
             </div>
@@ -685,12 +687,11 @@ export default function ShowroomUI({
                 className="add-to-cart-btn"
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => {
-                  alert(`Navigating to mock Shopify checkout URL:\n${checkoutInfo.checkoutUrl}`);
                   setCheckoutInfo(null);
                   setIsCartOpen(false);
                 }}
               >
-                Proceed to Payment (${checkoutInfo.cost?.subtotalAmount?.amount})
+                Done
               </button>
             </div>
           </div>

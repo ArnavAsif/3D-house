@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Check, ShoppingCart, Plus, Minus, Sparkles } from 'lucide-react';
-import { shopifyService } from '../../services/shopifyService';
+import { X, Check, ShoppingCart, Plus, Minus, ShieldCheck, Box } from 'lucide-react';
+import { commerceService } from '../../services/commerceService';
 import { getProductById } from '../../data/showroomProducts';
 
 /**
  * ProductModal
  * Decoupled luxury e-commerce modal.
- * Queries Shopify Storefront API asynchronously via unique showroom identifier (`product-XX`)
+ * Queries Next.js backend and Supabase PostgreSQL asynchronously via unique showroom identifier (`product-XX`)
  * and triggers real-time 3D variant material updates.
  */
 export default function ProductModal({
@@ -30,7 +30,7 @@ export default function ProductModal({
     let isMounted = true;
     setIsLoading(true);
 
-    shopifyService
+    commerceService
       .fetchProductByShowroomId(productId)
       .then((data) => {
         if (isMounted) {
@@ -101,9 +101,9 @@ export default function ProductModal({
             </span>
             <span
               className="shopify-synced-pill"
-              title={`Shopify GID: ${productData.id || productData.shopifyId}`}
+              title={`Supabase ID: ${productData.id}`}
             >
-              {isLoading ? 'Syncing...' : 'Shopify Synced'}
+              {isLoading ? 'Syncing...' : 'Supabase Live'}
             </span>
           </div>
         </div>
@@ -118,6 +118,11 @@ export default function ProductModal({
               <span className="selected-variant-name">
                 {selectedVariant?.title || selectedVariant?.name}
               </span>
+              {selectedVariant?.sku && (
+                <span className="variant-sku" style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#888' }}>
+                  {selectedVariant.sku}
+                </span>
+              )}
             </div>
             <div className="color-swatches-row">
               {productData.variants.map((v) => {

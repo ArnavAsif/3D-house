@@ -1,11 +1,11 @@
-// Decoupled Showroom Product Catalog with Shopify Storefront API Data Structure
+// Decoupled Showroom Product Catalog for Custom Supabase Commerce Backend
 // Note: Product metadata is strictly kept outside of 3D geometry meshes.
 // Meshes only carry `userData.productId = 'product-XX'`.
 
 export const SHOWROOM_PRODUCTS = [
   {
     id: 'product-01',
-    shopifyId: 'gid://shopify/Product/9182301928401',
+    dbId: 'prod-9182301928401',
     handle: 'aura-modern-lounge-chair',
     name: 'Aura Modern Lounge Chair',
     title: 'Aura Modern Lounge Chair',
@@ -28,7 +28,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.85, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910281',
+        id: 'var-4819203910281',
         name: 'Oatmeal Cream',
         title: 'Oatmeal Cream',
         price: '499.00',
@@ -37,7 +37,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910282',
+        id: 'var-4819203910282',
         name: 'Saddle Leather',
         title: 'Saddle Leather',
         price: '549.00',
@@ -46,7 +46,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910283',
+        id: 'var-4819203910283',
         name: 'Charcoal Velvet',
         title: 'Charcoal Velvet',
         price: '519.00',
@@ -55,7 +55,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910284',
+        id: 'var-4819203910284',
         name: 'Olive Linen',
         title: 'Olive Linen',
         price: '499.00',
@@ -73,7 +73,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-02',
-    shopifyId: 'gid://shopify/Product/9182301928402',
+    dbId: 'prod-9182301928402',
     handle: 'koto-travertine-coffee-tables',
     name: 'Koto Dual Travertine Coffee Tables',
     title: 'Koto Dual Travertine Coffee Tables',
@@ -96,7 +96,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.55, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910291',
+        id: 'var-4819203910291',
         name: 'Roman Travertine',
         title: 'Roman Travertine',
         price: '850.00',
@@ -105,7 +105,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910292',
+        id: 'var-4819203910292',
         name: 'Carrara White',
         title: 'Carrara White',
         price: '920.00',
@@ -114,7 +114,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910293',
+        id: 'var-4819203910293',
         name: 'Nero Marquina',
         title: 'Nero Marquina',
         price: '950.00',
@@ -131,7 +131,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-03',
-    shopifyId: 'gid://shopify/Product/9182301928403',
+    dbId: 'prod-9182301928403',
     handle: 'artisanal-ceramic-vessel-tray',
     name: 'Artisanal Ceramic Vessel & Travertine Tray',
     title: 'Artisanal Ceramic Vessel & Travertine Tray',
@@ -154,7 +154,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.45, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910301',
+        id: 'var-4819203910301',
         name: 'Chalk White & Travertine',
         title: 'Chalk White & Travertine',
         price: '185.00',
@@ -163,7 +163,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910302',
+        id: 'var-4819203910302',
         name: 'Raw Terracotta',
         title: 'Raw Terracotta',
         price: '185.00',
@@ -172,7 +172,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910303',
+        id: 'var-4819203910303',
         name: 'Basalt Charcoal',
         title: 'Basalt Charcoal',
         price: '195.00',
@@ -189,7 +189,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-04',
-    shopifyId: 'gid://shopify/Product/9182301928404',
+    dbId: 'prod-9182301928404',
     handle: 'archimede-cantilever-floor-lamp',
     name: 'Archimede Cantilever Arc Floor Lamp',
     title: 'Archimede Cantilever Arc Floor Lamp',
@@ -212,7 +212,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 1.2, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910311',
+        id: 'var-4819203910311',
         name: 'Brushed Champagne Brass',
         title: 'Brushed Champagne Brass',
         price: '420.00',
@@ -221,7 +221,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910312',
+        id: 'var-4819203910312',
         name: 'Matte Black Anodized',
         title: 'Matte Black Anodized',
         price: '390.00',
@@ -230,7 +230,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910313',
+        id: 'var-4819203910313',
         name: 'Subtle Bronze',
         title: 'Subtle Bronze',
         price: '440.00',
@@ -247,7 +247,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-05',
-    shopifyId: 'gid://shopify/Product/9182301928405',
+    dbId: 'prod-9182301928405',
     handle: 'nordic-fluted-media-console',
     name: 'Nordic Fluted Media Credenza',
     title: 'Nordic Fluted Media Credenza',
@@ -270,7 +270,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.75, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910321',
+        id: 'var-4819203910321',
         name: 'Smoked Walnut',
         title: 'Smoked Walnut',
         price: '1250.00',
@@ -279,7 +279,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910322',
+        id: 'var-4819203910322',
         name: 'Natural White Oak',
         title: 'Natural White Oak',
         price: '1190.00',
@@ -288,7 +288,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910323',
+        id: 'var-4819203910323',
         name: 'Ebonized Black Ash',
         title: 'Ebonized Black Ash',
         price: '1280.00',
@@ -305,7 +305,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-06',
-    shopifyId: 'gid://shopify/Product/9182301928406',
+    dbId: 'prod-9182301928406',
     handle: 'sculptural-bronze-horizon-object',
     name: 'Sculptural Bronze Horizon Object',
     title: 'Sculptural Bronze Horizon Object',
@@ -328,7 +328,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.4, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910331',
+        id: 'var-4819203910331',
         name: 'Dark Antique Bronze',
         title: 'Dark Antique Bronze',
         price: '340.00',
@@ -337,7 +337,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910332',
+        id: 'var-4819203910332',
         name: 'Polished Champagne Brass',
         title: 'Polished Champagne Brass',
         price: '375.00',
@@ -354,7 +354,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-07',
-    shopifyId: 'gid://shopify/Product/9182301928407',
+    dbId: 'prod-9182301928407',
     handle: 'monolithic-travertine-pedestal-urn',
     name: 'Monolithic Travertine Pedestal with Urn',
     title: 'Monolithic Travertine Pedestal with Urn',
@@ -377,7 +377,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.95, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910341',
+        id: 'var-4819203910341',
         name: 'Roman Beige Travertine',
         title: 'Roman Beige Travertine',
         price: '980.00',
@@ -386,7 +386,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910342',
+        id: 'var-4819203910342',
         name: 'Nero Marquina Stone',
         title: 'Nero Marquina Stone',
         price: '1050.00',
@@ -403,7 +403,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-08',
-    shopifyId: 'gid://shopify/Product/9182301928408',
+    dbId: 'prod-9182301928408',
     handle: 'foyer-niche-stoneware-amphora',
     name: 'Artisanal Stoneware Amphora',
     title: 'Artisanal Stoneware Amphora',
@@ -426,7 +426,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.5, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910351',
+        id: 'var-4819203910351',
         name: 'Chalk Sand Slip',
         title: 'Chalk Sand Slip',
         price: '260.00',
@@ -435,7 +435,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910352',
+        id: 'var-4819203910352',
         name: 'Ochre Terra',
         title: 'Ochre Terra',
         price: '260.00',
@@ -452,7 +452,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-09',
-    shopifyId: 'gid://shopify/Product/9182301928409',
+    dbId: 'prod-9182301928409',
     handle: 'solstice-8-seater-dining-table',
     name: 'Solstice 8-Seater Walnut Dining Table',
     title: 'Solstice 8-Seater Walnut Dining Table',
@@ -475,7 +475,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.9, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910361',
+        id: 'var-4819203910361',
         name: 'Smoked American Walnut',
         title: 'Smoked American Walnut',
         price: '2400.00',
@@ -484,7 +484,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910362',
+        id: 'var-4819203910362',
         name: 'Natural White Oak',
         title: 'Natural White Oak',
         price: '2250.00',
@@ -493,7 +493,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910363',
+        id: 'var-4819203910363',
         name: 'Bleached Ash',
         title: 'Bleached Ash',
         price: '2350.00',
@@ -510,7 +510,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-10',
-    shopifyId: 'gid://shopify/Product/9182301928410',
+    dbId: 'prod-9182301928410',
     handle: 'koto-dining-armchair',
     name: 'Koto Dining Armchair (Set of 2)',
     title: 'Koto Dining Armchair (Set of 2)',
@@ -533,7 +533,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.8, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910371',
+        id: 'var-4819203910371',
         name: 'Natural Sand Linen',
         title: 'Natural Sand Linen',
         price: '680.00',
@@ -542,7 +542,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910372',
+        id: 'var-4819203910372',
         name: 'Slate Grey',
         title: 'Slate Grey',
         price: '680.00',
@@ -551,7 +551,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910373',
+        id: 'var-4819203910373',
         name: 'Cognac Saddle Leather',
         title: 'Cognac Saddle Leather',
         price: '740.00',
@@ -568,7 +568,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-11',
-    shopifyId: 'gid://shopify/Product/9182301928411',
+    dbId: 'prod-9182301928411',
     handle: 'halo-linear-architectural-pendant',
     name: 'Halo Architectural Linear Pendant',
     title: 'Halo Architectural Linear Pendant',
@@ -591,7 +591,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.35, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910381',
+        id: 'var-4819203910381',
         name: 'Brushed Champagne Brass',
         title: 'Brushed Champagne Brass',
         price: '790.00',
@@ -600,7 +600,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910382',
+        id: 'var-4819203910382',
         name: 'Matte Black Anodized',
         title: 'Matte Black Anodized',
         price: '750.00',
@@ -609,7 +609,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910383',
+        id: 'var-4819203910383',
         name: 'Warm Bronze',
         title: 'Warm Bronze',
         price: '820.00',
@@ -626,7 +626,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-12',
-    shopifyId: 'gid://shopify/Product/9182301928412',
+    dbId: 'prod-9182301928412',
     handle: 'calacatta-gold-waterfall-kitchen-island',
     name: 'Calacatta Gold Waterfall Kitchen Island',
     title: 'Calacatta Gold Waterfall Kitchen Island',
@@ -649,7 +649,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 1.05, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910391',
+        id: 'var-4819203910391',
         name: 'Calacatta Gold',
         title: 'Calacatta Gold',
         price: '4500.00',
@@ -658,7 +658,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910392',
+        id: 'var-4819203910392',
         name: 'Nero Marquina',
         title: 'Nero Marquina',
         price: '4700.00',
@@ -667,7 +667,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910393',
+        id: 'var-4819203910393',
         name: 'Grey Armani Marble',
         title: 'Grey Armani Marble',
         price: '4600.00',
@@ -684,7 +684,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-13',
-    shopifyId: 'gid://shopify/Product/9182301928413',
+    dbId: 'prod-9182301928413',
     handle: 'linea-leather-counter-barstool',
     name: 'Linea Leather Counter Barstool',
     title: 'Linea Leather Counter Barstool',
@@ -707,7 +707,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.85, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910401',
+        id: 'var-4819203910401',
         name: 'Cognac Saddle Leather',
         title: 'Cognac Saddle Leather',
         price: '360.00',
@@ -716,7 +716,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910402',
+        id: 'var-4819203910402',
         name: 'Onyx Black Leather',
         title: 'Onyx Black Leather',
         price: '360.00',
@@ -725,7 +725,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910403',
+        id: 'var-4819203910403',
         name: 'Ivory Cream Bouclé',
         title: 'Ivory Cream Bouclé',
         price: '340.00',
@@ -742,7 +742,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-14',
-    shopifyId: 'gid://shopify/Product/9182301928414',
+    dbId: 'prod-9182301928414',
     handle: 'culinary-stone-mortar-ceramic-bowl',
     name: 'Artisanal Footed Ceramic Bowl & Marble Mortar',
     title: 'Artisanal Footed Ceramic Bowl & Marble Mortar',
@@ -765,7 +765,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.45, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910411',
+        id: 'var-4819203910411',
         name: 'Bianco Marble & Chalk',
         title: 'Bianco Marble & Chalk',
         price: '195.00',
@@ -774,7 +774,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910412',
+        id: 'var-4819203910412',
         name: 'Nero Stone & Charcoal',
         title: 'Nero Stone & Charcoal',
         price: '210.00',
@@ -791,7 +791,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-15',
-    shopifyId: 'gid://shopify/Product/9182301928415',
+    dbId: 'prod-9182301928415',
     handle: 'kyoto-floating-oak-platform-bed',
     name: 'Kyoto Floating Oak Platform Bed',
     title: 'Kyoto Floating Oak Platform Bed',
@@ -814,7 +814,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 1.1, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910421',
+        id: 'var-4819203910421',
         name: 'Warm Natural White Oak',
         title: 'Warm Natural White Oak',
         price: '2650.00',
@@ -823,7 +823,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910422',
+        id: 'var-4819203910422',
         name: 'Smoked Walnut',
         title: 'Smoked Walnut',
         price: '2790.00',
@@ -832,7 +832,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910423',
+        id: 'var-4819203910423',
         name: 'Ebonized Black Ash',
         title: 'Ebonized Black Ash',
         price: '2720.00',
@@ -849,7 +849,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-16',
-    shopifyId: 'gid://shopify/Product/9182301928416',
+    dbId: 'prod-9182301928416',
     handle: 'palma-organic-boucle-armchair-table',
     name: 'Palma Organic Boucle Armchair & Side Table',
     title: 'Palma Organic Boucle Armchair & Side Table',
@@ -872,7 +872,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 0.9, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910431',
+        id: 'var-4819203910431',
         name: 'Textured Cream Bouclé',
         title: 'Textured Cream Bouclé',
         price: '940.00',
@@ -881,7 +881,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910432',
+        id: 'var-4819203910432',
         name: 'Terracotta Rust',
         title: 'Terracotta Rust',
         price: '980.00',
@@ -890,7 +890,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910433',
+        id: 'var-4819203910433',
         name: 'Forest Moss',
         title: 'Forest Moss',
         price: '960.00',
@@ -907,7 +907,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-17',
-    shopifyId: 'gid://shopify/Product/9182301928417',
+    dbId: 'prod-9182301928417',
     handle: 'venezia-travertine-floating-vanity-mirror',
     name: 'Venezia Travertine Floating Vanity & Mirror',
     title: 'Venezia Travertine Floating Vanity & Mirror',
@@ -930,7 +930,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 1.0, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910441',
+        id: 'var-4819203910441',
         name: 'Beige Roman Travertine',
         title: 'Beige Roman Travertine',
         price: '1980.00',
@@ -939,7 +939,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910442',
+        id: 'var-4819203910442',
         name: 'Nero Marquina Stone',
         title: 'Nero Marquina Stone',
         price: '2150.00',
@@ -956,7 +956,7 @@ export const SHOWROOM_PRODUCTS = [
   },
   {
     id: 'product-18',
-    shopifyId: 'gid://shopify/Product/9182301928418',
+    dbId: 'prod-9182301928418',
     handle: 'grand-pivot-architectural-timber-door',
     name: 'Grand Pivot Architectural Timber Door',
     title: 'Grand Pivot Architectural Timber Door',
@@ -979,7 +979,7 @@ export const SHOWROOM_PRODUCTS = [
     hotspotOffset: [0, 1.45, 0],
     variants: [
       {
-        id: 'gid://shopify/ProductVariant/4819203910451',
+        id: 'var-4819203910451',
         name: 'Warm Natural Teak',
         title: 'Warm Natural Teak',
         price: '3200.00',
@@ -988,7 +988,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910452',
+        id: 'var-4819203910452',
         name: 'Charred Yakisugi Black',
         title: 'Charred Yakisugi Black',
         price: '3350.00',
@@ -997,7 +997,7 @@ export const SHOWROOM_PRODUCTS = [
         availableForSale: true
       },
       {
-        id: 'gid://shopify/ProductVariant/4819203910453',
+        id: 'var-4819203910453',
         name: 'Dark Smoked Walnut',
         title: 'Dark Smoked Walnut',
         price: '3300.00',

@@ -28,7 +28,7 @@ export default function LoadingScreen({ forceVisible = false }) {
 
         <h1 className="loading-title">Interactive 3D Showroom</h1>
         <p className="loading-subtitle">
-          Preparing structural shell, procedural travertine materials, and Shopify catalog...
+          Preparing structural shell, procedural travertine materials, and Supabase catalog...
         </p>
 
         {/* Progress Bar */}
@@ -51,7 +51,7 @@ export default function LoadingScreen({ forceVisible = false }) {
           <span>•</span>
           <span>Shadow-Line Architecture</span>
           <span>•</span>
-          <span>Dynamic Storefront API</span>
+          <span>Next.js + Supabase Commerce</span>
         </div>
       </div>
     </div>
