@@ -1,4 +1,4 @@
-// Showroom 3D Spatial Layout Types
+// Showroom 3D Spatial Layout & Database Types (Supabase PostgreSQL)
 
 export type ShowroomPlacementType =
   | 'Furniture Floor Zone'
@@ -12,6 +12,29 @@ export type ShowroomPlacementType =
   | 'Dedicated Architectural Display Areas'
   | 'Architectural Lighting Zone';
 
+/**
+ * Showroom product row as stored in Supabase public.showroom_products table.
+ */
+export interface ShowroomProductRecord {
+  id: string;
+  productId: string;
+  modelUrl?: string | null;
+  positionX: number;
+  positionY: number;
+  positionZ: number;
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
+  scale: number;
+  interactionRadius: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Spatial positioning used by Three.js runtime.
+ */
 export interface ShowroomSpatialPosition {
   showroomId: string; // e.g. 'product-01'
   position: [number, number, number];

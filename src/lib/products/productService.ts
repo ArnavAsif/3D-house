@@ -9,7 +9,7 @@ export class ProductDataService {
   private cache: Map<string, Product> = new Map();
 
   /**
-   * Fetches product details by decoupled 3D ID (`product-XX`) or database UUID.
+   * Fetches product details by decoupled 3D ID (`product-XX`), slug, or database UUID.
    */
   async getProduct(identifier: string): Promise<Product> {
     if (this.cache.has(identifier)) {
@@ -30,7 +30,7 @@ export class ProductDataService {
     }
 
     // High-performance client-side fallback from seeded dataset
-    const local = getProductById(identifier) || SHOWROOM_PRODUCTS.find((p) => p.dbId === identifier);
+    const local = getProductById(identifier) || SHOWROOM_PRODUCTS.find((p) => p.dbId === identifier || p.handle === identifier);
     if (!local) {
       throw new Error(`Product "${identifier}" not found in catalog.`);
     }
@@ -54,13 +54,14 @@ export class ProductDataService {
       variants: local.variants.map((v) => ({
         id: v.id,
         productId: local.dbId || `prod-${local.id}`,
+        name: v.name,
         title: v.name,
         sku: `SKU-${local.id.toUpperCase()}-${v.name.replace(/\s+/g, '-').toUpperCase()}`,
         price: Number(v.price || local.price),
         hex: v.hex,
         color3: v.color3,
         availableForSale: v.availableForSale,
-        inventoryCount: 15
+        inventoryCount: 20
       })),
       details: local.details
     };
@@ -77,6 +78,7 @@ export class ProductDataService {
       const queryParams = new URLSearchParams();
       if (filter?.room) queryParams.set('room', filter.room);
       if (filter?.category) queryParams.set('category', filter.category);
+      if (filter?.categoryId) queryParams.set('categoryId', filter.categoryId);
 
       const url = `/api/products${queryParams.toString() ? `?${queryParams}` : ''}`;
       const res = await fetch(url);
@@ -90,7 +92,7 @@ export class ProductDataService {
       console.warn('[ProductDataService] Fallback to local catalog:', err);
     }
 
-    let products = SHOWROOM_PRODUCTS.map((local) => ({
+    let products: Product[] = SHOWROOM_PRODUCTS.map((local) => ({
       id: local.dbId || `prod-${local.id}`,
       showroomId: local.id,
       name: local.name,
@@ -109,18 +111,22 @@ export class ProductDataService {
       variants: local.variants.map((v) => ({
         id: v.id,
         productId: local.dbId || `prod-${local.id}`,
+        name: v.name,
         title: v.name,
         sku: `SKU-${local.id.toUpperCase()}-${v.name.replace(/\s+/g, '-').toUpperCase()}`,
         price: Number(v.price || local.price),
         hex: v.hex,
         color3: v.color3,
         availableForSale: v.availableForSale,
-        inventoryCount: 15
+        inventoryCount: 20
       }))
     }));
 
     if (filter?.room) {
       products = products.filter((p) => p.room.toLowerCase() === filter.room!.toLowerCase());
+    }
+    if (filter?.category) {
+      products = products.filter((p) => p.category.toLowerCase() === filter.category!.toLowerCase());
     }
     return products;
   }

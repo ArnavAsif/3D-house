@@ -16,7 +16,9 @@ export class InventoryService {
         return {
           variantId,
           inStock: json.inStock ?? true,
-          availableQuantity: json.availableQuantity ?? 15,
+          quantity: json.quantity ?? 20,
+          reservedQuantity: json.reservedQuantity ?? 0,
+          availableQuantity: json.availableQuantity ?? 20,
           isLowStock: json.isLowStock ?? false
         };
       }
@@ -27,7 +29,9 @@ export class InventoryService {
     return {
       variantId,
       inStock: true,
-      availableQuantity: 15,
+      quantity: 20,
+      reservedQuantity: 0,
+      availableQuantity: 20,
       isLowStock: false
     };
   }

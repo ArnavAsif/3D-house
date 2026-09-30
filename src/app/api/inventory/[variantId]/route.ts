@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/inventory/[variantId]
- * Checks real-time stock and reserved quantity for a specific product variant.
+ * Checks real-time stock and reserved quantity for a specific product variant in Supabase.
  */
 export async function GET(
   _request: NextRequest,
@@ -15,19 +15,20 @@ export async function GET(
 
     const { data: record, error } = await supabase
       .from('inventory')
-      .select('stock_quantity, reserved_quantity, low_stock_threshold')
+      .select('id, variant_id, quantity, reserved_quantity, updated_at')
       .eq('variant_id', variantId)
       .maybeSingle();
 
     if (!error && record) {
-      const available = record.stock_quantity - record.reserved_quantity;
+      const available = record.quantity - record.reserved_quantity;
       return NextResponse.json({
         success: true,
         variantId,
-        stockQuantity: record.stock_quantity,
+        quantity: record.quantity,
+        reservedQuantity: record.reserved_quantity,
         availableQuantity: Math.max(0, available),
         inStock: available > 0,
-        isLowStock: available <= record.low_stock_threshold
+        isLowStock: available <= 3
       });
     }
 
@@ -35,8 +36,9 @@ export async function GET(
     return NextResponse.json({
       success: true,
       variantId,
-      stockQuantity: 15,
-      availableQuantity: 15,
+      quantity: 20,
+      reservedQuantity: 0,
+      availableQuantity: 20,
       inStock: true,
       isLowStock: false
     });

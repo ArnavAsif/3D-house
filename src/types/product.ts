@@ -1,35 +1,64 @@
-// Product Domain Types (Custom Next.js + Supabase Commerce)
+// Product & Category Domain Types (Custom Next.js + Supabase PostgreSQL Commerce)
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  sortOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface ProductVariant {
   id: string;
   productId: string;
-  title: string;
-  name?: string;
+  name: string;
+  title?: string; // Alias for name
   sku: string;
   price: number;
-  hex: string;
-  color3: string | number;
-  availableForSale: boolean;
+  status?: 'draft' | 'active' | 'archived';
+  hex?: string;
+  color3?: string | number;
+  availableForSale?: boolean;
   inventoryCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProductImage {
+  id: string;
+  productId: string;
+  imageUrl: string;
+  altText?: string;
+  sortOrder?: number;
+  createdAt?: string;
 }
 
 export interface Product {
   id: string;
+  categoryId?: string;
+  category?: string;
+  categoryData?: Category;
   showroomId: string; // Decoupled identifier matching 3D mesh (e.g. 'product-01')
   name: string;
   title?: string;
   slug: string;
-  category: string;
+  description: string;
+  shortDescription?: string;
+  basePrice?: number;
+  price: number;
+  status?: 'draft' | 'active' | 'archived';
   room: string;
   displayZone: string;
   placementType: string;
-  description: string;
   dimensions: string;
   materials: string;
-  price: number;
   rating: number;
   reviewsCount: number;
-  modelUrl?: string; // Optional Supabase Storage .glb/.gltf URL
+  modelUrl?: string; // Supabase Storage .glb/.gltf URL
+  images?: ProductImage[];
   variants: ProductVariant[];
   details?: string[];
   createdAt?: string;
@@ -39,6 +68,7 @@ export interface Product {
 export interface ProductFilter {
   room?: string;
   category?: string;
+  categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
   inStockOnly?: boolean;
