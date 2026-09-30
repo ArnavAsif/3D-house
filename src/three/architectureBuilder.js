@@ -401,12 +401,6 @@ export function buildArchitecture(scene) {
   const porticoCanopy = createBox(6.0, 0.2, 1.8, materials.creamWall, [0.0, 3.2, 7.3], 'PorticoCanopySlab');
   columnsGroup.add(porticoColumnLeft, porticoColumnRight, porticoCanopy);
 
-  // B. Foyer / Living / Dining Central Structural Column (380mm x 380mm x 3.2m)
-  // Positioned at X = 0.0, Z = 1.5 (natural architectural transition node)
-  const centralColumn = createBox(0.38, wallH, 0.38, materials.marbleFloor, [0.0, wallMidY, 1.5], 'CentralStructuralColumn');
-  // Brushed brass base collar (100mm high)
-  const columnBrassBase = createBox(0.4, 0.1, 0.4, materials.brassMetal, [0.0, 0.05, 1.5], 'ColumnBrassBase');
-  columnsGroup.add(centralColumn, columnBrassBase);
 
   // C. Rear Garden Terrace Canopy Support Columns (250mm x 250mm steel/stone)
   const rearColLeft = createBox(0.25, wallH, 0.25, materials.blackMullion, [-5.75, wallMidY, -13.0], 'RearTerraceColumnLeft');

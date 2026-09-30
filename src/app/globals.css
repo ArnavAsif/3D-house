@@ -121,3 +121,73 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* =========================================================================
+   Interactive Product Pin & Leader Line Callout Badge (Ref: ChatGPT Image)
+   ========================================================================= */
+.product-pin-callout {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  transform: translate(0, -60px);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-pin-callout:hover {
+  transform: translate(0, -63px) scale(1.04);
+}
+
+.pin-leader-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.pin-pill-badge {
+  position: absolute;
+  left: 68px;
+  top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 10px;
+  background: rgba(28, 30, 35, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  color: #ffffff;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pin-pill-badge:hover,
+.product-pin-callout:hover .pin-pill-badge {
+  background: rgba(38, 42, 50, 0.96);
+  border-color: rgba(235, 55, 55, 0.65);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(235, 55, 55, 0.4);
+}
+
+.pin-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  opacity: 0.95;
+}
+
+.pin-badge-text {
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}

@@ -636,8 +636,6 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
   const waterfallL = createBox(0.08, 0.84, 1.1, materials.calacatta, [-1.56, 0.42, 0]);
   const waterfallR = createBox(0.08, 0.84, 1.1, materials.calacatta, [1.56, 0.42, 0]);
   const islandCabinets = createBox(3.04, 0.84, 0.82, materials.darkCharcoalCabinet, [0, 0.42, -0.14]);
-  const islandLed = createBox(3.0, 0.015, 0.02, materials.luminaireGlow, [0, 0.83, 0.27], false, false);
-  const sinkLedge = createBox(0.68, 0.02, 0.44, materials.matteBlackMetal, [-0.4, 0.91, -0.12]);
   const faucetBase = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.38, 12), materials.matteBlackMetal);
   faucetBase.position.set(-0.4, 1.08, -0.32);
   faucetBase.castShadow = true;
@@ -645,7 +643,7 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
   faucetArch.position.set(-0.4, 1.25, -0.21);
   faucetArch.rotation.y = Math.PI / 2;
 
-  islandGroup.add(islandTop, waterfallL, waterfallR, islandCabinets, islandLed, sinkLedge, faucetBase, faucetArch);
+  islandGroup.add(islandTop, waterfallL, waterfallR, islandCabinets, islandLed, faucetBase, faucetArch);
   tagInteractive(islandGroup, 'product-12');
   kitchenGroup.add(islandGroup);
 
@@ -826,20 +824,16 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
   tagInteractive(vanityGroup, 'product-17');
   bathGroup.add(vanityGroup);
 
-  // Shower Fluted Glass Screen & Toilet
-  const showerScreen = createBox(0.02, 2.4, 1.5, materials.flutedGlass, [-0.6, 1.2, -6.1], false, false);
+  // Shower Fixtures & Toilet
   const rainShowerArm = createBox(0.03, 0.4, 0.03, materials.matteBlackMetal, [-1.2, 2.7, -6.5]);
   const rainShowerHead = createBox(0.35, 0.02, 0.35, materials.matteBlackMetal, [-1.2, 2.5, -6.5]);
   const toilet = createBox(0.4, 0.42, 0.58, materials.matteCeramicWhite, [0.9, 0.38, -5.5]);
   const flushPlate = createBox(0.24, 0.14, 0.01, materials.matteBlackMetal, [0.9, 0.95, -5.8]);
-  bathGroup.add(showerScreen, rainShowerArm, rainShowerHead, toilet, flushPlate);
+  bathGroup.add(rainShowerArm, rainShowerHead, toilet, flushPlate);
 
   furnitureGroup.add(bathGroup);
 
-  // Generate 3D Hotspot Beacon Pins for all products in catalog
-  productsCatalog.forEach((product) => {
-    createHotspot(product);
-  });
+  // Hotspot indicators are handled by the modular Products component
 
   return {
     group: furnitureGroup,

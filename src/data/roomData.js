@@ -133,8 +133,7 @@ export const COLLISION_OBSTACLES = [
   { id: 'wall-west', minX: -10.0, maxX: -9.6, minZ: -8.0, maxZ: 6.5 },
   { id: 'wall-east', minX: 9.6, maxX: 10.0, minZ: -8.0, maxZ: 6.5 },
 
-  // Architectural Columns:
-  { id: 'column-central', minX: -0.22, maxX: 0.22, minZ: 1.28, maxZ: 1.72 },
+
   { id: 'column-portico-left', minX: -2.65, maxX: -2.15, minZ: 7.55, maxZ: 8.05 },
   { id: 'column-portico-right', minX: 2.15, maxX: 2.65, minZ: 7.55, maxZ: 8.05 },
 

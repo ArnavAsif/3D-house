@@ -473,17 +473,20 @@ body, html {
 }
 
 .map-product-dot {
-  fill: var(--color-gold);
+  fill: #e62424;
   stroke: #ffffff;
   stroke-width: 0.15;
   cursor: pointer;
-  transition: r 0.2s ease;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.4));
+  transition: all 0.2s ease;
 }
 
 .map-product-dot:hover,
 .map-product-dot.active {
-  fill: #e09419;
-  r: 0.8;
+  fill: #ff2b2b;
+  stroke: #ffffff;
+  stroke-width: 0.2;
+  filter: drop-shadow(0 0 3px rgba(230, 36, 36, 0.8));
 }
 
 .player-view-cone {
