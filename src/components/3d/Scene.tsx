@@ -166,6 +166,7 @@ export default function Scene() {
         hoveredProductId={hoveredProductId}
         onCloseProduct={() => setActiveProductId(null)}
         onSelectProduct={(id) => setActiveProductId(id)}
+        onHoverProduct={setHoveredProductId}
         onVariantChange={handleVariantChange}
         currentMode={currentMode}
         onModeChange={handleModeChange}

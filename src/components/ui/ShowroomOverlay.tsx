@@ -19,6 +19,7 @@ import CartDrawer from '@/components/cart/CartDrawer';
 import Minimap from './Minimap';
 import MobileControls from './MobileControls';
 import SpecsModal from './SpecsModal';
+import ProductCalloutsLayer from './ProductCalloutsLayer';
 import { CartItem } from '@/types/cart';
 import { Product, ProductVariant } from '@/types/product';
 
@@ -27,6 +28,7 @@ interface ShowroomOverlayProps {
   hoveredProductId: string | null;
   onCloseProduct: () => void;
   onSelectProduct: (id: string) => void;
+  onHoverProduct?: (id: string | null) => void;
   onVariantChange: (id: string, variant: ProductVariant) => void;
   currentMode: string;
   onModeChange: (mode: string) => void;
@@ -49,6 +51,7 @@ export default function ShowroomOverlay({
   hoveredProductId,
   onCloseProduct,
   onSelectProduct,
+  onHoverProduct,
   onVariantChange,
   currentMode,
   onModeChange,
@@ -213,6 +216,13 @@ export default function ShowroomOverlay({
           </button>
         </div>
       </header>
+
+      {/* 2. MODERN PRODUCT CALLOUT HUD (Leader line & frosted badge matching reference photo) */}
+      <ProductCalloutsLayer
+        hoveredProductId={hoveredProductId}
+        onSelectProduct={onSelectProduct}
+        onHoverProduct={onHoverProduct || (() => {})}
+      />
 
       {/* 2. CONTROLS GUIDE OVERLAY */}
       {showControlsHint && (

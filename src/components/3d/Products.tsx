@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { useGLTF, Html } from '@react-three/drei';
+import React, { useRef, useMemo, useEffect } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { positioningService } from '@/lib/showroom/positioningService';
-import { productService } from '@/lib/products/productService';
-import { ProductVariant, Product } from '@/types/product';
+import { ProductVariant } from '@/types/product';
 import { ShowroomSpatialPosition } from '@/types/showroom';
 
 interface GLTFProductLoaderProps {
@@ -48,33 +47,6 @@ export function GLTFProductLoader({
       scale={scale}
       userData={{ productId }}
     />
-  );
-}
-
-/**
- * InteractiveTapIcon
- * Hand cursor icon with radiating tap lines, matching reference indicator badge.
- */
-function InteractiveTapIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ display: 'block', flexShrink: 0 }}
-    >
-      {/* Radiating tap arc lines */}
-      <path d="M12 2v2.5" />
-      <path d="M5.2 5.2l1.8 1.8" />
-      <path d="M18.8 5.2l-1.8 1.8" />
-      {/* Hand index finger pointing */}
-      <path d="M14 9V5a2 2 0 0 0-4 0v7.5l-1.9-1.9a1.6 1.6 0 0 0-2.2 0 1.6 1.6 0 0 0 0 2.2l4.8 4.8A4 4 0 0 0 13.5 19H17a4 4 0 0 0 4-4v-4.5a2 2 0 0 0-2-2h-3z" />
-    </svg>
   );
 }
 
@@ -137,21 +109,11 @@ interface ProductPinIndicatorProps {
 
 /**
  * ProductPinIndicator
- * Modern navigation indicator modeled after ChatGPT reference image:
- * - 3D glossy red pushpin with slender stainless steel needle
- * - Concentric surface ripple rings on contact surface
- * - Angled slender leader line
- * - Dark frosted pill badge with hand click icon and "Interactive Product" label
+ * 3D glossy red pushpin with stainless steel needle and surface ripple rings.
+ * Modeled after reference image: pure WebGL rendering with zero React 19 DOM conflicts.
  */
 function ProductPinIndicator({ target, isHovered, onClick }: ProductPinIndicatorProps) {
   const pinGroupRef = useRef<THREE.Group>(null);
-  const [productData, setProductData] = useState<Product | null>(null);
-
-  useEffect(() => {
-    productService.getProduct(target.showroomId).then((p) => {
-      if (p) setProductData(p);
-    }).catch(() => {});
-  }, [target.showroomId]);
 
   useFrame(({ clock }) => {
     if (pinGroupRef.current) {
@@ -230,53 +192,57 @@ function ProductPinIndicator({ target, isHovered, onClick }: ProductPinIndicator
           <meshStandardMaterial color="#ffffff" metalness={0.92} roughness={0.1} />
         </mesh>
       </group>
-
-      {/* 3. HTML Leader Line & Frosted Badge HUD */}
-      <Html
-        position={[0, 0.24, 0]}
-        center={false}
-        distanceFactor={11}
-        zIndexRange={[90, 10]}
-        style={{ pointerEvents: 'auto', userSelect: 'none' }}
-      >
-        <div
-          className={`product-pin-callout ${isHovered ? 'hovered' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick(target.showroomId);
-          }}
-          title={productData ? `${productData.title} - $${productData.price}` : 'Inspect Product'}
-        >
-          {/* Angled Leader Line (Diagonal elbow to badge) */}
-          <svg className="pin-leader-svg" width="90" height="60" viewBox="0 0 90 60">
-            {/* Origin Anchor Dot */}
-            <circle cx="2" cy="58" r="3.2" fill="#ffffff" stroke="rgba(230,36,36,0.9)" strokeWidth="1.5" />
-            {/* 45-degree Angled Elbow Line */}
-            <polyline
-              points="2,58 38,18 70,18"
-              fill="none"
-              stroke="rgba(255, 255, 255, 0.88)"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          {/* Frosted Dark Pill Badge */}
-          <div className="pin-pill-badge">
-            <div className="pin-badge-icon">
-              <InteractiveTapIcon />
-            </div>
-            <span className="pin-badge-text">
-              {isHovered && productData
-                ? `${productData.title || productData.name}`
-                : 'Interactive Product'}
-            </span>
-          </div>
-        </div>
-      </Html>
     </group>
   );
+}
+
+/**
+ * PinScreenTracker
+ * Runs inside the React Three Fiber Canvas loop.
+ * Projects 3D pin locations to 2D viewport coordinates and updates DOM callouts
+ * via hardware-accelerated translate3d at full 60fps with ZERO React 19 re-renders.
+ */
+export function PinScreenTracker() {
+  const { camera, size } = useThree();
+  const targets = useMemo(() => positioningService.getAllPositions(), []);
+  const tempVec = useRef(new THREE.Vector3());
+
+  useFrame(() => {
+    for (const target of targets) {
+      const el = document.getElementById(`pin-callout-${target.showroomId}`);
+      if (!el) continue;
+
+      tempVec.current.set(
+        target.position[0],
+        target.position[1] + (target.hotspotOffset?.[1] || 0.85) + 0.24,
+        target.position[2]
+      );
+      tempVec.current.project(camera);
+
+      // Check if point is in front of the camera and within view frustum
+      const inFront = tempVec.current.z < 1.0;
+      const insideFrustum =
+        tempVec.current.x >= -1.15 &&
+        tempVec.current.x <= 1.15 &&
+        tempVec.current.y >= -1.15 &&
+        tempVec.current.y <= 1.15;
+
+      if (!inFront || !insideFrustum) {
+        el.style.opacity = '0';
+        el.style.pointerEvents = 'none';
+        continue;
+      }
+
+      const screenX = (tempVec.current.x * 0.5 + 0.5) * size.width;
+      const screenY = (-tempVec.current.y * 0.5 + 0.5) * size.height;
+
+      el.style.opacity = '1';
+      el.style.pointerEvents = 'auto';
+      el.style.transform = `translate3d(${screenX}px, ${screenY}px, 0)`;
+    }
+  });
+
+  return null;
 }
 
 interface ProductsProps {
@@ -341,7 +307,10 @@ export default function Products({
 
   return (
     <group name="interactive-product-zones">
-      {/* Modern Red Pushpin Indicators with Leader Lines and Badges */}
+      {/* 60fps Hardware Screen Tracker for 2D Callouts */}
+      <PinScreenTracker />
+
+      {/* Modern Red Pushpin Indicators with Surface Waves */}
       {targets.map((target) => (
         <ProductPinIndicator
           key={target.showroomId}
