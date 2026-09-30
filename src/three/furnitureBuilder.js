@@ -246,6 +246,11 @@ export function buildFurnitureAndProducts(scene, productsCatalog) {
 
     meshOrGroup.traverse((child) => {
       if (child.isMesh) {
+        if (child.material) {
+          child.material = Array.isArray(child.material)
+            ? child.material.map((m) => m.clone())
+            : child.material.clone();
+        }
         child.userData = {
           productId: dbProductId,
           showroomId: slotId,

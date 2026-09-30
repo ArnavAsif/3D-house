@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { productService } from '@/lib/products/productService';
 
 interface ProductInteractionProps {
   onProductHover?: (productId: string | null) => void;
@@ -20,48 +18,16 @@ interface MeshMaterialEntry {
 }
 
 /**
- * FloatingCursorIndicator
- * Subtle floating luxury badge that follows mouse cursor on desktop when pointing at an interactive product.
- */
-function FloatingCursorIndicator({
-  visible,
-  x,
-  y,
-  productName
-}: {
-  visible: boolean;
-  x: number;
-  y: number;
-  productName: string;
-}) {
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(
-    <div
-      className={`product-cursor-indicator ${visible ? 'active' : ''}`}
-      style={{
-        transform: `translate3d(${x + 16}px, ${y + 16}px, 0)`,
-        pointerEvents: 'none'
-      }}
-    >
-      <span className="indicator-dot" />
-      <span className="indicator-title">{productName}</span>
-      <span className="indicator-action">Inspect</span>
-    </div>,
-    document.body
-  );
-}
-
-/**
  * ProductInteraction
  * Raycasting and pointer event manager for interactive showroom products.
  *
  * Architecture:
  * - Three.js Raycasting through React Three Fiber.
  * - Completely separate from product rendering.
- * - Desktop: Smooth hover detection, subtle material highlight, cursor styling, and floating product indicator.
+ * - Desktop: Smooth hover detection, subtle material highlight, cursor styling.
  * - Mobile: Hover disabled; tap detection selects product and maintains subtle highlight until closed.
  * - Subtle, premium architectural highlight (no aggressive glowing effects).
+ * - Pure 3D WebGL component returning null (no DOM JSX inside Canvas).
  */
 export default function ProductInteraction({
   onProductHover,
@@ -72,12 +38,9 @@ export default function ProductInteraction({
   const raycaster = useRef(new THREE.Raycaster());
 
   const [isTouchDevice, setIsTouchDevice] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  // Hover state
+  // Hover tracking
   const hoveredIdRef = useRef<string | null>(null);
-  const [hoveredProductName, setHoveredProductName] = useState<string>('');
-  const [cursorPos, setCursorPos] = useState({ x: -9999, y: -9999 });
 
   // Material highlight registry
   // Maps material UUID -> original color and smooth lerp target
@@ -85,11 +48,9 @@ export default function ProductInteraction({
 
   // Subtle warm architectural champagne highlight (calm, elegant, physically based)
   const highlightColor = useRef(new THREE.Color(0x352b20));
-  const blackColor = useRef(new THREE.Color(0x000000));
 
   // 1. Detect touch device vs desktop fine pointer
   useEffect(() => {
-    setMounted(true);
     const checkTouch = () => {
       const hasCoarse = window.matchMedia('(pointer: coarse)').matches;
       const hasFine = window.matchMedia('(pointer: fine)').matches;
@@ -100,20 +61,7 @@ export default function ProductInteraction({
     return () => window.removeEventListener('resize', checkTouch);
   }, []);
 
-  // 2. Track mouse cursor position on desktop for the small product name indicator
-  useEffect(() => {
-    if (isTouchDevice) return;
-
-    const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') return;
-      setCursorPos({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    return () => window.removeEventListener('pointermove', handlePointerMove);
-  }, [isTouchDevice]);
-
-  // 3. Register and smoothly interpolate subtle material highlights
+  // 2. Register and smoothly interpolate subtle material highlights
   const applySubtleHighlight = useCallback(
     (mesh: THREE.Mesh, highlight: boolean) => {
       if (!mesh.material || mesh.userData.isHotspot) return;
@@ -146,7 +94,7 @@ export default function ProductInteraction({
     []
   );
 
-  // 4. Raycast and highlight loop inside React Three Fiber frame
+  // 3. Raycast and highlight loop inside React Three Fiber frame
   useFrame(() => {
     // Current target product to highlight:
     // On Mobile: strictly the selected activeProduct (persists while panel is open)
@@ -163,15 +111,30 @@ export default function ProductInteraction({
       let foundId: string | null = null;
 
       for (const hit of intersects) {
+        if (!hit.object.visible) continue;
+
         let cur: THREE.Object3D | null = hit.object;
+        let isProduct = false;
         while (cur && cur !== scene) {
           if (cur.userData && (cur.userData.productId || cur.userData.isInteractive)) {
             foundId = cur.userData.productId || cur.userData.showroomId;
+            isProduct = true;
             break;
           }
           cur = cur.parent;
         }
-        if (foundId) break;
+
+        if (isProduct) {
+          break;
+        }
+
+        // Occlusion check: solid non-transparent geometry blocks ray
+        const meshObj = hit.object as THREE.Mesh;
+        const mat = meshObj.material as THREE.Material | undefined;
+        const isTransparent = mat && mat.transparent && mat.opacity < 0.3;
+        if (!isTransparent) {
+          break;
+        }
       }
 
       if (foundId !== hoveredIdRef.current) {
@@ -180,14 +143,6 @@ export default function ProductInteraction({
 
         if (onProductHover) {
           onProductHover(foundId);
-        }
-
-        if (foundId) {
-          productService.getProduct(foundId).then((prod) => {
-            if (prod) setHoveredProductName(prod.title || prod.name);
-          }).catch(() => {
-            setHoveredProductName('Showroom Piece');
-          });
         }
       }
     } else if (activeProduct) {
@@ -205,7 +160,7 @@ export default function ProductInteraction({
       }
     });
 
-    // 5. Smoothly lerp material emissive properties at 60 FPS (silky architectural warmth)
+    // 4. Smoothly lerp material emissive properties at 60 FPS (silky architectural warmth)
     materialRegistry.current.forEach((entry, uuid) => {
       entry.mat.emissive.lerp(entry.targetEmissive, 0.12);
 
@@ -222,7 +177,7 @@ export default function ProductInteraction({
     });
   });
 
-  // 6. Desktop Click & Mobile Tap Handling
+  // 5. Desktop Click & Mobile Tap Handling
   useEffect(() => {
     const dom = gl.domElement;
     let pointerStartX = 0;
@@ -256,15 +211,29 @@ export default function ProductInteraction({
 
       let clickedProduct: string | null = null;
       for (const hit of intersects) {
+        if (!hit.object.visible) continue;
+
         let cur: THREE.Object3D | null = hit.object;
+        let isProduct = false;
         while (cur && cur !== scene) {
           if (cur.userData && (cur.userData.productId || cur.userData.isInteractive)) {
             clickedProduct = cur.userData.productId || cur.userData.showroomId;
+            isProduct = true;
             break;
           }
           cur = cur.parent;
         }
-        if (clickedProduct) break;
+
+        if (isProduct) {
+          break;
+        }
+
+        const meshObj = hit.object as THREE.Mesh;
+        const mat = meshObj.material as THREE.Material | undefined;
+        const isTransparent = mat && mat.transparent && mat.opacity < 0.3;
+        if (!isTransparent) {
+          break;
+        }
       }
 
       if (clickedProduct && onProductSelect) {
@@ -289,23 +258,6 @@ export default function ProductInteraction({
     };
   }, [gl.domElement]);
 
-  const showIndicator =
-    mounted &&
-    !isTouchDevice &&
-    Boolean(hoveredIdRef.current) &&
-    !activeProduct &&
-    Boolean(hoveredProductName);
-
-  return (
-    <>
-      {showIndicator && (
-        <FloatingCursorIndicator
-          visible={showIndicator}
-          x={cursorPos.x}
-          y={cursorPos.y}
-          productName={hoveredProductName}
-        />
-      )}
-    </>
-  );
+  // Pure 3D component inside R3F canvas tree
+  return null;
 }

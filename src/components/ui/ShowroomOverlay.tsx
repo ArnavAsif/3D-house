@@ -72,6 +72,29 @@ export default function ShowroomOverlay({
   const [showArchSpecs, setShowArchSpecs] = useState(false);
   const [showControlsHint, setShowControlsHint] = useState(true);
   const [hoveredProductName, setHoveredProductName] = useState<string>('Product');
+  const [cursorPos, setCursorPos] = useState({ x: -9999, y: -9999 });
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const checkTouch = () => {
+      const hasCoarse = window.matchMedia('(pointer: coarse)').matches;
+      const hasFine = window.matchMedia('(pointer: fine)').matches;
+      setIsTouchDevice(hasCoarse && !hasFine);
+    };
+    checkTouch();
+    window.addEventListener('resize', checkTouch);
+    return () => window.removeEventListener('resize', checkTouch);
+  }, []);
+
+  useEffect(() => {
+    if (isTouchDevice) return;
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+      setCursorPos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    return () => window.removeEventListener('pointermove', handlePointerMove);
+  }, [isTouchDevice]);
 
   const rooms = positioningService.getRooms();
 
@@ -282,13 +305,17 @@ export default function ShowroomOverlay({
         </div>
       )}
 
-      {/* 3. HOVERED PRODUCT PREVIEW CHIP */}
-      {hoveredProductId && !activeProductId && (
-        <div className="hover-chip">
-          <Sparkles size={14} className="hover-sparkle" />
-          <span>
-            Click to inspect <strong>{hoveredProductName}</strong>
-          </span>
+      {/* 3. Small Floating Product Name Cursor Indicator (Desktop Interaction) */}
+      {!isTouchDevice && hoveredProductId && !activeProductId && cursorPos.x > 0 && (
+        <div
+          className="product-cursor-indicator active"
+          style={{
+            transform: `translate3d(${cursorPos.x + 16}px, ${cursorPos.y + 16}px, 0)`
+          }}
+        >
+          <span className="indicator-dot" />
+          <span className="indicator-title">{hoveredProductName}</span>
+          <span className="indicator-action">Inspect</span>
         </div>
       )}
 
