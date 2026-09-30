@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, Suspense, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import PerformanceManager from './PerformanceManager';
 import Environment from './Environment';
 import Lighting from './Lighting';
@@ -17,12 +17,28 @@ import ShowroomOverlay from './ShowroomOverlay';
 import { ROOMS_DATA } from '../../data/roomData';
 
 /**
+ * CanvasReadyNotifier
+ * Signals to the LoadingScreen when the WebGL canvas has compiled and rendered its first frame.
+ */
+function CanvasReadyNotifier({ onReady }) {
+  const notified = useRef(false);
+  useFrame(() => {
+    if (!notified.current) {
+      notified.current = true;
+      if (onReady) onReady();
+    }
+  });
+  return null;
+}
+
+/**
  * Scene
  * Master React Three Fiber WebGL Showroom component.
  * Integrates modular components for Architecture, Furniture, Products,
  * Lighting, CollisionSystem, Camera, Player, and UI HUD.
  */
 export default function Scene() {
+  const [sceneReady, setSceneReady] = useState(false);
   const [currentMode, setCurrentMode] = useState('DOLLHOUSE');
   const [isNight, setIsNight] = useState(false);
   const [showCeiling, setShowCeiling] = useState(false);
@@ -70,7 +86,7 @@ export default function Scene() {
   return (
     <div className="showroom-app-root">
       {/* 1. Loading Screen Fallback */}
-      <LoadingScreen />
+      <LoadingScreen isSceneReady={sceneReady} />
 
       {/* 2. WebGL 3D Canvas Viewport via React Three Fiber */}
       <div className="three-viewport-canvas">
@@ -90,6 +106,9 @@ export default function Scene() {
           }}
         >
           <Suspense fallback={null}>
+            {/* Notify when WebGL pipeline renders first frame */}
+            <CanvasReadyNotifier onReady={() => setSceneReady(true)} />
+
             {/* Adaptive GPU / Frame Scaling */}
             <PerformanceManager />
 

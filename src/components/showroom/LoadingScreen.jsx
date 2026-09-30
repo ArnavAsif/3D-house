@@ -1,25 +1,61 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProgress } from '@react-three/drei';
-import { Sparkles, Compass } from 'lucide-react';
+import { Compass } from 'lucide-react';
 
 /**
  * LoadingScreen
- * Luxury architectural blueprint loading state integrated with Drei's useProgress.
- * Displays real-time asset loading percentage and smooth transition into the 3D scene.
+ * Luxury architectural blueprint loading state integrated with Drei's useProgress
+ * and WebGL canvas first-frame detection.
+ * Automatically resolves and fades out smoothly without getting stuck at 0%.
  */
-export default function LoadingScreen({ forceVisible = false }) {
-  const { active, progress, errors, item, loaded, total } = useProgress();
+export default function LoadingScreen({ isSceneReady = false, forceVisible = false }) {
+  const { active, progress, item, loaded, total } = useProgress();
+  const [displayProgress, setDisplayProgress] = useState(25);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isUnmounted, setIsUnmounted] = useState(false);
 
-  if (!active && !forceVisible && progress >= 100) {
+  useEffect(() => {
+    // If Drei has active asset loading queue:
+    if (active && total > 0) {
+      setDisplayProgress(Math.max(25, Math.round(progress)));
+      if (progress >= 100) {
+        setIsFadingOut(true);
+        const timer = setTimeout(() => setIsUnmounted(true), 500);
+        return () => clearTimeout(timer);
+      }
+    } else if (isSceneReady) {
+      // Scene has rendered first frame in WebGL
+      setDisplayProgress(100);
+      const timer = setTimeout(() => {
+        setIsFadingOut(true);
+        setTimeout(() => setIsUnmounted(true), 500);
+      }, 350);
+      return () => clearTimeout(timer);
+    } else {
+      // Fast incremental progression while initializing procedural materials
+      const interval = setInterval(() => {
+        setDisplayProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + 25;
+        });
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [active, progress, total, isSceneReady]);
+
+  if (isUnmounted && !forceVisible) {
     return null;
   }
 
-  const roundedProgress = Math.min(100, Math.round(progress || 0));
+  const rounded = Math.min(100, Math.max(25, displayProgress));
 
   return (
-    <div className="loading-screen-backdrop">
+    <div className={`loading-screen-backdrop ${isFadingOut ? 'fading-out' : ''}`}>
       <div className="loading-card">
         <div className="loading-badge">
           <Compass size={16} className="spin-slow" />
@@ -35,14 +71,18 @@ export default function LoadingScreen({ forceVisible = false }) {
         <div className="loading-bar-track">
           <div
             className="loading-bar-fill"
-            style={{ width: `${roundedProgress}%` }}
+            style={{ width: `${rounded}%` }}
           />
         </div>
 
         <div className="loading-meta-row">
-          <span className="loading-percent">{roundedProgress}%</span>
+          <span className="loading-percent">{rounded}%</span>
           <span className="loading-item-text">
-            {item ? `Loading: ${item.split('/').pop()}` : `Assets: ${loaded}/${total || 18}`}
+            {item
+              ? `Loading: ${item.split('/').pop()}`
+              : isSceneReady
+              ? 'Scene Initialized'
+              : 'Generating Architectural Shell'}
           </span>
         </div>
 
