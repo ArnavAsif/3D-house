@@ -1,45 +1,60 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShoppingCart, X, Check, ShieldCheck, PackageCheck } from 'lucide-react';
-import { commerceService } from '../../services/commerceService';
+import { ShoppingCart, X, PackageCheck } from 'lucide-react';
+import { CartItem } from '@/types/cart';
+import { Order } from '@/types/order';
+import { orderService } from '@/lib/orders/orderService';
+import { cartService } from '@/lib/cart/cartService';
+import CartItemRow from './CartItemRow';
+
+interface CartDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  items: CartItem[];
+  onRemoveItem: (index: number) => void;
+  onClearCart?: () => void;
+}
 
 /**
- * Cart
- * Showroom cart drawer integrated with custom Next.js + Supabase Commerce backend.
- * Calculates line items and executes order placement against Supabase PostgreSQL.
+ * CartDrawer
+ * Slide-over luxury cart drawer integrated with the custom orderService.
+ * Executes order creation in Supabase PostgreSQL via Next.js backend.
  */
-export default function Cart({
+export default function CartDrawer({
   isOpen,
   onClose,
   items = [],
-  onRemoveItem
-}) {
+  onRemoveItem,
+  onClearCart
+}: CartDrawerProps) {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [orderInfo, setOrderInfo] = useState(null);
+  const [orderInfo, setOrderInfo] = useState<Order | null>(null);
 
   if (!isOpen) return null;
 
-  const cartTotal = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const subtotal = cartService.calculateSubtotal(items);
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
     setIsCheckingOut(true);
     try {
-      const lineItems = items.map((item) => ({
-        productId: item.product.id || item.product.showroomId,
-        variantId: item.variant?.id || `var-${item.product.id}`,
-        product: item.product,
-        variant: item.variant,
-        price: item.product.price,
-        quantity: item.quantity
-      }));
-      const orderResult = await commerceService.createOrder(lineItems);
+      const orderPayload = {
+        sessionId: 'session',
+        items: items.map((it) => ({
+          productId: it.productId || it.product?.id,
+          variantId: it.variantId || it.variant?.id,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice || it.product?.price,
+          productName: it.product?.name || it.product?.title,
+          variantTitle: it.variant?.title || it.variant?.name
+        }))
+      };
+
+      const orderResult = await orderService.createOrder(orderPayload);
       setOrderInfo(orderResult);
+      if (onClearCart) onClearCart();
     } catch (err) {
       console.error('Failed to create custom order:', err);
     } finally {
@@ -71,28 +86,12 @@ export default function Cart({
               </div>
             ) : (
               items.map((item, idx) => (
-                <div key={`${item.product.id}-${idx}`} className="cart-item-row">
-                  <div className="cart-item-info">
-                    <div className="cart-item-name">{item.product.title || item.product.name}</div>
-                    <div className="cart-item-variant">
-                      Color: {item.variant?.title || item.variant?.name}
-                    </div>
-                    <div className="cart-item-price-unit">
-                      ${item.product.price} × {item.quantity}
-                    </div>
-                  </div>
-                  <div className="cart-item-actions">
-                    <span className="cart-item-total">
-                      ${(item.product.price * item.quantity).toLocaleString()}
-                    </span>
-                    <button
-                      className="cart-remove-btn"
-                      onClick={() => onRemoveItem(idx)}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                </div>
+                <CartItemRow
+                  key={`${item.productId}-${item.variantId}-${idx}`}
+                  item={item}
+                  index={idx}
+                  onRemove={onRemoveItem}
+                />
               ))
             )}
           </div>
@@ -101,7 +100,7 @@ export default function Cart({
             <div className="cart-drawer-footer">
               <div className="cart-summary-line">
                 <span>Subtotal</span>
-                <span>${cartTotal.toLocaleString()}</span>
+                <span>${subtotal.toLocaleString()}</span>
               </div>
               <div className="cart-summary-line">
                 <span>White Glove Delivery</span>
@@ -109,7 +108,7 @@ export default function Cart({
               </div>
               <div className="cart-summary-total">
                 <span>Total</span>
-                <span>${cartTotal.toLocaleString()}</span>
+                <span>${subtotal.toLocaleString()}</span>
               </div>
               <button
                 className="checkout-btn"
@@ -132,9 +131,7 @@ export default function Cart({
             </button>
             <div className="product-modal-header">
               <div className="modal-badge-row">
-                <span className="shopify-synced-pill" style={{ background: '#eaf4ed', color: '#276738' }}>
-                  Supabase Order Confirmed
-                </span>
+                <span className="commerce-synced-pill">Supabase Order Confirmed</span>
               </div>
               <h2 className="modal-product-title">Order {orderInfo.orderNumber}</h2>
               <p className="modal-description" style={{ marginTop: '8px', marginBottom: '16px' }}>
@@ -151,7 +148,7 @@ export default function Cart({
               </div>
               <div className="spec-item">
                 <span className="spec-title">Fulfillment Routing</span>
-                <span className="spec-value">Direct Atelier White Glove White Glove Dispatch</span>
+                <span className="spec-value">Direct Atelier White Glove Dispatch</span>
               </div>
               <div className="spec-item">
                 <span className="spec-title">Order Total</span>

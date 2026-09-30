@@ -1,54 +1,64 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Check, ShoppingCart, Plus, Minus, ShieldCheck, Box } from 'lucide-react';
-import { commerceService } from '../../services/commerceService';
-import { getProductById } from '../../data/showroomProducts';
+import { X, Check, ShoppingCart, Plus, Minus, Box } from 'lucide-react';
+import { Product, ProductVariant } from '@/types/product';
+import { productService } from '@/lib/products/productService';
+import { inventoryService } from '@/lib/inventory/inventoryService';
+import VariantSelector from './VariantSelector';
+
+interface ProductModalProps {
+  productId: string | null;
+  onClose: () => void;
+  onAddToCart: (item: { product: Product; variant: ProductVariant; quantity: number }) => void;
+  onVariantChange?: (productId: string, variant: ProductVariant) => void;
+}
 
 /**
  * ProductModal
- * Decoupled luxury e-commerce modal.
- * Queries Next.js backend and Supabase PostgreSQL asynchronously via unique showroom identifier (`product-XX`)
- * and triggers real-time 3D variant material updates.
+ * Decoupled luxury product presentation modal.
+ * Uses productService and inventoryService to query Next.js backend and Supabase PostgreSQL.
  */
 export default function ProductModal({
   productId,
   onClose,
   onAddToCart,
   onVariantChange
-}) {
-  const [productData, setProductData] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+}: ProductModalProps) {
+  const [productData, setProductData] = useState<Product | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [stockInfo, setStockInfo] = useState<{ inStock: boolean; availableQuantity: number }>({
+    inStock: true,
+    availableQuantity: 15
+  });
   const [addedAnimation, setAddedAnimation] = useState(false);
 
-  // Fetch product metadata asynchronously via decoupled identifier
+  // Fetch product metadata asynchronously via decoupled showroom ID
   useEffect(() => {
     if (!productId) return;
 
     let isMounted = true;
     setIsLoading(true);
 
-    commerceService
-      .fetchProductByShowroomId(productId)
+    productService
+      .getProduct(productId)
       .then((data) => {
         if (isMounted) {
           setProductData(data);
           if (data.variants && data.variants.length > 0) {
-            setSelectedVariant(data.variants[0]);
+            const first = data.variants[0];
+            setSelectedVariant(first);
+            // Check real-time stock for the default variant
+            inventoryService.checkStock(first.id).then((stock) => {
+              if (isMounted) setStockInfo(stock);
+            });
           }
         }
       })
       .catch((err) => {
-        console.warn('Fallback to local product catalog:', err);
-        const fallback = getProductById(productId);
-        if (isMounted && fallback) {
-          setProductData(fallback);
-          if (fallback.variants && fallback.variants.length > 0) {
-            setSelectedVariant(fallback.variants[0]);
-          }
-        }
+        console.warn('Failed to load product details:', err);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -61,8 +71,9 @@ export default function ProductModal({
 
   if (!productId || !productData) return null;
 
-  const handleVariantSelect = (v) => {
+  const handleVariantSelect = (v: ProductVariant) => {
     setSelectedVariant(v);
+    inventoryService.checkStock(v.id).then(setStockInfo);
     if (onVariantChange) {
       onVariantChange(productId, v);
     }
@@ -100,49 +111,22 @@ export default function ProductModal({
               ★ {productData.rating} ({productData.reviewsCount} reviews)
             </span>
             <span
-              className="shopify-synced-pill"
+              className="commerce-synced-pill"
               title={`Supabase ID: ${productData.id}`}
             >
-              {isLoading ? 'Syncing...' : 'Supabase Live'}
+              {isLoading ? 'Syncing...' : stockInfo.inStock ? `In Stock (${stockInfo.availableQuantity})` : 'Limited'}
             </span>
           </div>
         </div>
 
         <p className="modal-description">{productData.description}</p>
 
-        {/* Color Variant Selector */}
-        {productData.variants && productData.variants.length > 0 && (
-          <div className="variant-selection-section">
-            <div className="variant-label-row">
-              <span className="section-label">Color:</span>
-              <span className="selected-variant-name">
-                {selectedVariant?.title || selectedVariant?.name}
-              </span>
-              {selectedVariant?.sku && (
-                <span className="variant-sku" style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#888' }}>
-                  {selectedVariant.sku}
-                </span>
-              )}
-            </div>
-            <div className="color-swatches-row">
-              {productData.variants.map((v) => {
-                const vName = v.title || v.name;
-                const isSelected = (selectedVariant?.title || selectedVariant?.name) === vName;
-                return (
-                  <button
-                    key={v.id || vName}
-                    className={`color-swatch-btn ${isSelected ? 'selected' : ''}`}
-                    style={{ backgroundColor: v.hex }}
-                    onClick={() => handleVariantSelect(v)}
-                    title={vName}
-                  >
-                    {isSelected && <Check size={12} color="#ffffff" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* Modular Variant Selector */}
+        <VariantSelector
+          variants={productData.variants}
+          selectedVariant={selectedVariant}
+          onSelect={handleVariantSelect}
+        />
 
         {/* Dimensions & Material Specs */}
         <div className="modal-specs-grid">

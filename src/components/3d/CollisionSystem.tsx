@@ -1,7 +1,8 @@
 'use client';
 
 import * as THREE from 'three';
-import { COLLISION_OBSTACLES } from '../../data/roomData';
+import { COLLISION_OBSTACLES } from '@/data/roomData';
+import { CollisionObstacle } from '@/types/showroom';
 
 /**
  * CollisionSystem
@@ -10,18 +11,21 @@ import { COLLISION_OBSTACLES } from '../../data/roomData';
  * without clipping through solid walls, kitchen islands, or built-in plinths.
  */
 export class CollisionEngine {
-  constructor(obstacles = COLLISION_OBSTACLES) {
+  public obstacles: CollisionObstacle[];
+  public playerRadius: number;
+
+  constructor(obstacles: CollisionObstacle[] = COLLISION_OBSTACLES as unknown as CollisionObstacle[]) {
     this.obstacles = obstacles;
     this.playerRadius = 0.45; // 450mm body clearance
   }
 
   /**
    * Resolves player movement with independent X and Z axis sliding collision checks.
-   * @param {THREE.Vector3} currentPos - Current player position
-   * @param {THREE.Vector3} targetPos - Intended next position
-   * @returns {THREE.Vector3} - Corrected position allowing smooth wall sliding
+   * @param currentPos - Current player position
+   * @param targetPos - Intended next position
+   * @returns Corrected position allowing smooth wall sliding
    */
-  resolveMovement(currentPos, targetPos) {
+  resolveMovement(currentPos: THREE.Vector3, targetPos: THREE.Vector3): THREE.Vector3 {
     const nextPos = currentPos.clone();
     const r = this.playerRadius;
 
@@ -59,13 +63,13 @@ export class CollisionEngine {
       nextPos.z = targetPos.z;
     }
 
-    // Always maintain eye height
-    nextPos.y = currentPos.y;
+    // Retain fixed eye-level camera height (1.65m standard standing perspective)
+    nextPos.y = 1.65;
+
     return nextPos;
   }
 }
 
-// Global collision instance
 export const collisionEngine = new CollisionEngine();
 
 export default function CollisionSystem() {

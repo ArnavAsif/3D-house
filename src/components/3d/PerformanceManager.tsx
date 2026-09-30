@@ -3,13 +3,17 @@
 import React from 'react';
 import { AdaptiveDpr, AdaptiveEvents, Bvh } from '@react-three/drei';
 
+interface PerformanceManagerProps {
+  enableBvh?: boolean;
+}
+
 /**
  * PerformanceManager
  * Adaptive rendering controls and hardware scaling for React Three Fiber.
  * Automatically adapts device pixel ratio during camera movement and downscales
  * expensive compute passes on low-power mobile GPUs.
  */
-export default function PerformanceManager({ enableBvh = true }) {
+export default function PerformanceManager({ enableBvh = true }: PerformanceManagerProps) {
   return (
     <>
       {/* Adaptively scales DPR down when frame drops occur (e.g. 1.5x down to 1x) */}

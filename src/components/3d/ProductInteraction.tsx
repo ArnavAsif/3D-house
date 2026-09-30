@@ -4,6 +4,12 @@ import React, { useEffect, useRef } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+interface ProductInteractionProps {
+  onProductHover?: (productId: string | null) => void;
+  onProductSelect?: (productId: string) => void;
+  activeProduct?: string | null;
+}
+
 /**
  * ProductInteraction
  * Raycasting and pointer event manager for interactive showroom products.
@@ -14,10 +20,10 @@ export default function ProductInteraction({
   onProductHover,
   onProductSelect,
   activeProduct
-}) {
+}: ProductInteractionProps) {
   const { camera, scene, gl, pointer } = useThree();
   const raycaster = useRef(new THREE.Raycaster());
-  const hoveredRef = useRef(null);
+  const hoveredRef = useRef<string | null>(null);
 
   // Manage raycast test each frame or on pointer move
   useFrame(() => {
@@ -34,10 +40,10 @@ export default function ProductInteraction({
     raycaster.current.setFromCamera(pointer, camera);
     const intersects = raycaster.current.intersectObjects(scene.children, true);
 
-    let foundProduct = null;
+    let foundProduct: string | null = null;
 
     for (const hit of intersects) {
-      let cur = hit.object;
+      let cur: THREE.Object3D | null = hit.object;
       while (cur && cur !== scene) {
         if (cur.userData && cur.userData.productId) {
           foundProduct = cur.userData.productId;

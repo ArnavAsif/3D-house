@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 
 // Dynamically import client-only WebGL React Three Fiber Scene with SSR disabled
 const ShowroomScene = dynamic(
-  () => import('../components/showroom/Scene'),
+  () => import('../components/3d/Scene'),
   {
     ssr: false,
     loading: () => (

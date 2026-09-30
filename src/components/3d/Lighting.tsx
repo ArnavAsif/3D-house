@@ -1,16 +1,19 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+interface LightingProps {
+  isNight?: boolean;
+}
 
 /**
  * Lighting
  * Dual-state architectural lighting engine for Villa Lumina.
  * Dynamically modulates between Golden Hour Daylight and Moody Ambient Evening.
  */
-export default function Lighting({ isNight = false }) {
-  const sunRef = useRef();
+export default function Lighting({ isNight = false }: LightingProps) {
+  const sunRef = useRef<THREE.DirectionalLight>(null);
 
   return (
     <group name="architectural-lighting">

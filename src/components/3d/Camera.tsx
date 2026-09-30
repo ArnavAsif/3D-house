@@ -1,26 +1,21 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
+
+interface CameraProps {
+  currentMode?: string;
+}
 
 /**
  * Camera
  * Dual-perspective architectural camera manager for Villa Lumina.
  * Toggles seamlessly between Orbiting Dollhouse Axonometric View and First-Person Walkthrough.
  */
-export default function Camera({ currentMode = 'DOLLHOUSE' }) {
+export default function Camera({ currentMode = 'DOLLHOUSE' }: CameraProps) {
   const { camera } = useThree();
-  const controlsRef = useRef();
-  const transitionRef = useRef({
-    active: false,
-    startPos: new THREE.Vector3(),
-    endPos: new THREE.Vector3(),
-    startLook: new THREE.Vector3(),
-    endLook: new THREE.Vector3(),
-    progress: 0
-  });
+  const controlsRef = useRef<any>(null);
 
   // Switch camera perspective on mode change
   useEffect(() => {

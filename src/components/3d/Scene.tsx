@@ -13,14 +13,16 @@ import Camera from './Camera';
 import CollisionSystem from './CollisionSystem';
 import ProductInteraction from './ProductInteraction';
 import LoadingScreen from './LoadingScreen';
-import ShowroomOverlay from './ShowroomOverlay';
-import { ROOMS_DATA } from '../../data/roomData';
+import ShowroomOverlay from '@/components/ui/ShowroomOverlay';
+import { positioningService } from '@/lib/showroom/positioningService';
+import { ProductVariant } from '@/types/product';
+import * as THREE from 'three';
 
 /**
  * CanvasReadyNotifier
  * Signals to the LoadingScreen when the WebGL canvas has compiled and rendered its first frame.
  */
-function CanvasReadyNotifier({ onReady }) {
+function CanvasReadyNotifier({ onReady }: { onReady: () => void }) {
   const notified = useRef(false);
   useFrame(() => {
     if (!notified.current) {
@@ -42,20 +44,20 @@ export default function Scene() {
   const [currentMode, setCurrentMode] = useState('DOLLHOUSE');
   const [isNight, setIsNight] = useState(false);
   const [showCeiling, setShowCeiling] = useState(false);
-  const [activeProductId, setActiveProductId] = useState(null);
-  const [hoveredProductId, setHoveredProductId] = useState(null);
-  const [activeVariant, setActiveVariant] = useState(null);
+  const [activeProductId, setActiveProductId] = useState<string | null>(null);
+  const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
+  const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
   const [playerPosition, setPlayerPosition] = useState({ x: 0, z: 7.8, yaw: 0, mode: 'DOLLHOUSE' });
-  const [teleportTarget, setTeleportTarget] = useState(null);
+  const [teleportTarget, setTeleportTarget] = useState<{ x: number; z: number; yaw?: number } | null>(null);
   const [joystickVector, setJoystickVector] = useState({ x: 0, y: 0 });
 
-  const [furnitureGroup, setFurnitureGroup] = useState(null);
+  const [furnitureGroup, setFurnitureGroup] = useState<THREE.Group | null>(null);
 
-  const handleRegisterInteractives = ({ group }) => {
+  const handleRegisterInteractives = ({ group }: { group: THREE.Group }) => {
     setFurnitureGroup(group);
   };
 
-  const handleModeChange = (mode) => {
+  const handleModeChange = (mode: string) => {
     setCurrentMode(mode);
     if (mode === 'FIRST_PERSON') {
       setShowCeiling(true);
@@ -64,8 +66,9 @@ export default function Scene() {
     }
   };
 
-  const handleTeleportRoom = (roomId) => {
-    const room = ROOMS_DATA.find((r) => r.id === roomId);
+  const handleTeleportRoom = (roomId: string) => {
+    const rooms = positioningService.getRooms();
+    const room = rooms.find((r) => r.id === roomId);
     if (room && room.cameraWaypoint) {
       setTeleportTarget({
         x: room.cameraWaypoint.position[0],
@@ -79,7 +82,7 @@ export default function Scene() {
     }
   };
 
-  const handleVariantChange = (productId, variant) => {
+  const handleVariantChange = (productId: string, variant: ProductVariant) => {
     setActiveVariant(variant);
   };
 

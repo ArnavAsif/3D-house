@@ -3,6 +3,11 @@
 import React, { useState, useRef } from 'react';
 import { Move } from 'lucide-react';
 
+interface MobileControlsProps {
+  currentMode: string;
+  onJoystickMove?: (vector: { x: number; y: number }) => void;
+}
+
 /**
  * MobileControls
  * Touch virtual joystick controller for mobile first-person walkthroughs.
@@ -11,14 +16,14 @@ import { Move } from 'lucide-react';
 export default function MobileControls({
   currentMode,
   onJoystickMove
-}) {
+}: MobileControlsProps) {
   const [knobPos, setKnobPos] = useState({ x: 0, y: 0 });
   const [isActive, setIsActive] = useState(false);
-  const baseRef = useRef();
+  const baseRef = useRef<HTMLDivElement>(null);
 
   if (currentMode !== 'FIRST_PERSON') return null;
 
-  const updateFromPointer = (e) => {
+  const updateFromPointer = (e: React.PointerEvent) => {
     if (!baseRef.current) return;
     const rect = baseRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -45,13 +50,13 @@ export default function MobileControls({
     }
   };
 
-  const handlePointerDown = (e) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
     setIsActive(true);
     updateFromPointer(e);
   };
 
-  const handlePointerMove = (e) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!isActive) return;
     e.stopPropagation();
     updateFromPointer(e);
@@ -73,6 +78,8 @@ export default function MobileControls({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      role="region"
+      aria-label="Mobile Navigation Joystick"
     >
       <div
         className="virtual-joystick-knob"

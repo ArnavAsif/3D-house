@@ -4,14 +4,22 @@ import React, { useState, useEffect } from 'react';
 import { useProgress } from '@react-three/drei';
 import { Compass } from 'lucide-react';
 
+interface LoadingScreenProps {
+  isSceneReady?: boolean;
+  forceVisible?: boolean;
+}
+
 /**
  * LoadingScreen
  * Luxury architectural blueprint loading state integrated with Drei's useProgress
  * and WebGL canvas first-frame detection.
  * Automatically resolves and fades out smoothly without getting stuck at 0%.
  */
-export default function LoadingScreen({ isSceneReady = false, forceVisible = false }) {
-  const { active, progress, item, loaded, total } = useProgress();
+export default function LoadingScreen({
+  isSceneReady = false,
+  forceVisible = false
+}: LoadingScreenProps) {
+  const { active, progress, item, total } = useProgress();
   const [displayProgress, setDisplayProgress] = useState(25);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);

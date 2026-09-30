@@ -5,6 +5,13 @@ import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { collisionEngine } from './CollisionSystem';
 
+interface PlayerProps {
+  currentMode: string;
+  joystickVector?: { x: number; y: number };
+  onPositionUpdate: (pos: { x: number; z: number; yaw: number; mode: string }) => void;
+  teleportTarget?: { x: number; z: number; yaw?: number } | null;
+}
+
 /**
  * Player
  * First-Person avatar & movement controller for Villa Lumina.
@@ -16,7 +23,7 @@ export default function Player({
   joystickVector,
   onPositionUpdate,
   teleportTarget
-}) {
+}: PlayerProps) {
   const { camera, gl } = useThree();
 
   const playerPos = useRef(new THREE.Vector3(0, 1.65, 7.8)); // Start at entry porch
@@ -43,7 +50,7 @@ export default function Player({
 
   // Keyboard navigation listeners
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.code) {
         case 'KeyW':
         case 'ArrowUp':
@@ -61,10 +68,12 @@ export default function Player({
         case 'ArrowRight':
           keys.current.right = true;
           break;
+        default:
+          break;
       }
     };
 
-    const handleKeyUp = (e) => {
+    const handleKeyUp = (e: KeyboardEvent) => {
       switch (e.code) {
         case 'KeyW':
         case 'ArrowUp':
@@ -82,6 +91,8 @@ export default function Player({
         case 'ArrowRight':
           keys.current.right = false;
           break;
+        default:
+          break;
       }
     };
 
@@ -93,84 +104,88 @@ export default function Player({
     };
   }, []);
 
-  // Mouse drag look-around listeners
+  // Mouse drag look listeners (360° first-person view)
   useEffect(() => {
     if (currentMode !== 'FIRST_PERSON') return;
 
     const dom = gl.domElement;
 
-    const handleMouseDown = (e) => {
-      if (e.button === 0) {
-        isDragging.current = true;
-        lastMousePos.current = { x: e.clientX, y: e.clientY };
-      }
+    const onPointerDown = (e: PointerEvent) => {
+      isDragging.current = true;
+      lastMousePos.current = { x: e.clientX, y: e.clientY };
     };
 
-    const handleMouseMove = (e) => {
+    const onPointerMove = (e: PointerEvent) => {
       if (!isDragging.current) return;
       const dx = e.clientX - lastMousePos.current.x;
       const dy = e.clientY - lastMousePos.current.y;
       lastMousePos.current = { x: e.clientX, y: e.clientY };
 
-      playerYaw.current -= dx * 0.003;
-      playerPitch.current -= dy * 0.003;
-      playerPitch.current = Math.max(-Math.PI / 2.6, Math.min(Math.PI / 2.6, playerPitch.current));
+      const lookSpeed = 0.003;
+      playerYaw.current -= dx * lookSpeed;
+      playerPitch.current -= dy * lookSpeed;
+
+      // Clamp vertical pitch to prevent neck overturning [-60°, +60°]
+      playerPitch.current = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, playerPitch.current));
     };
 
-    const handleMouseUp = () => {
+    const onPointerUp = () => {
       isDragging.current = false;
     };
 
-    dom.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    dom.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
 
     return () => {
-      dom.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      dom.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
     };
   }, [currentMode, gl.domElement]);
 
-  // Frame tick: update player movement, collision resolution, and camera transform
+  // Per-frame physics update & movement integration
   useFrame((_, delta) => {
     if (currentMode !== 'FIRST_PERSON') return;
 
-    const moveSpeed = 4.2; // meters/sec
-    const moveDir = new THREE.Vector3();
+    const dt = Math.min(delta, 0.1);
+    const walkSpeed = 3.6; // 3.6 m/s walk speed
 
-    if (keys.current.forward) moveDir.z -= 1;
-    if (keys.current.backward) moveDir.z += 1;
-    if (keys.current.left) moveDir.x -= 1;
-    if (keys.current.right) moveDir.x += 1;
+    // Calculate move vector from keyboard or mobile joystick
+    const moveZ =
+      (keys.current.forward ? -1 : 0) +
+      (keys.current.backward ? 1 : 0) +
+      (joystickVector ? -joystickVector.y : 0);
+    const moveX =
+      (keys.current.right ? 1 : 0) +
+      (keys.current.left ? -1 : 0) +
+      (joystickVector ? joystickVector.x : 0);
 
-    // Mobile virtual joystick input
-    if (joystickVector && (Math.abs(joystickVector.x) > 0.1 || Math.abs(joystickVector.y) > 0.1)) {
-      moveDir.x += joystickVector.x;
-      moveDir.z -= joystickVector.y;
+    if (Math.abs(moveX) > 0.05 || Math.abs(moveZ) > 0.05) {
+      const dir = new THREE.Vector3(moveX, 0, moveZ).normalize();
+
+      // Rotate direction vector by player's horizontal yaw
+      dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw.current);
+
+      const targetPos = playerPos.current.clone().addScaledVector(dir, walkSpeed * dt);
+
+      // Resolve collision with architectural walls and obstacle footprints
+      const correctedPos = collisionEngine.resolveMovement(playerPos.current, targetPos);
+      playerPos.current.copy(correctedPos);
     }
 
-    if (moveDir.lengthSq() > 0.001) {
-      moveDir.normalize();
-
-      const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw.current);
-      const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw.current);
-
-      const targetMovement = forward.multiplyScalar(-moveDir.z).add(right.multiplyScalar(moveDir.x));
-      targetMovement.multiplyScalar(moveSpeed * delta);
-
-      const intendedPos = playerPos.current.clone().add(targetMovement);
-      playerPos.current = collisionEngine.resolveMovement(playerPos.current, intendedPos);
-    }
-
-    // Update Camera Position and Look Direction
+    // Synchronize Camera with Player Position and Look Angles
     camera.position.copy(playerPos.current);
-    const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-    euler.x = playerPitch.current;
-    euler.y = playerYaw.current;
-    camera.quaternion.setFromEuler(euler);
 
-    // Broadcast position to Minimap Radar
+    // Compute look-at direction
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyAxisAngle(new THREE.Vector3(1, 0, 0), playerPitch.current);
+    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), playerYaw.current);
+
+    const lookTarget = playerPos.current.clone().add(forward);
+    camera.lookAt(lookTarget);
+
+    // Broadcast current position to 2D floor plan radar minimap
     if (onPositionUpdate) {
       onPositionUpdate({
         x: playerPos.current.x,

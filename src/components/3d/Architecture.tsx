@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useMemo, useEffect, useRef } from 'react';
-import { buildArchitecture } from '../../three/architectureBuilder';
+import { buildArchitecture } from '@/three/architectureBuilder';
+import * as THREE from 'three';
+
+interface ArchitectureProps {
+  showCeiling?: boolean;
+}
 
 /**
  * Architecture
@@ -9,8 +14,8 @@ import { buildArchitecture } from '../../three/architectureBuilder';
  * Manages floors, 0.32m exterior walls, 0.15m interior partitions, doors, windows,
  * and ceiling visibility according to camera mode.
  */
-export default function Architecture({ showCeiling = false }) {
-  const ceilingRef = useRef();
+export default function Architecture({ showCeiling = false }: ArchitectureProps) {
+  const ceilingRef = useRef<THREE.Group | null>(null);
 
   const { group, ceilingGroup } = useMemo(() => {
     return buildArchitecture();

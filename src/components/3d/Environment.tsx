@@ -3,11 +3,15 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
 
+interface EnvironmentProps {
+  isNight?: boolean;
+}
+
 /**
  * Environment
  * Exterior landscape, garden terrace, sky ambiance, and atmospheric depth for Villa Lumina.
  */
-export default function Environment({ isNight = false }) {
+export default function Environment({ isNight = false }: EnvironmentProps) {
   // Garden Lawn Material
   const grassMat = useMemo(
     () =>
